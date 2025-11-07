@@ -2,8 +2,35 @@
     <table class="w-full table-fixed">
         <thead>
             <tr class="border-b-1 border-[#E9EAEB]">
-                <th class="py-3 px-4 ps-[24px] text-left font-medium whitespace-nowrap" style="width: 19%;">
-                    Documentation Name
+                <th class="py-3 px-4 ps-[24px] text-left font-medium whitespace-nowrap relative" style="width: 19%;" #documentationNameDropdown>
+                    <div class="flex items-center gap-[4px]">
+                        Documentation Name
+                        <button (click)="toggleFilter('documentationName')" 
+                                class="w-[16px] h-[16px] bg-[url('assets/icons/filter-icon.svg')] hover:opacity-70 transition-opacity cursor-pointer"
+                                [class.opacity-100]="isDocumentationNameFilterOpen"
+                                [class.opacity-60]="!isDocumentationNameFilterOpen">
+                        </button>
+                        <!-- Documentation Name Filter Dropdown -->
+                        <div *ngIf="isDocumentationNameFilterOpen" class="absolute top-full left-0 mt-1 bg-white border border-[#E9EAEB] rounded-lg shadow-lg z-20 min-w-[200px] max-h-[300px] overflow-y-auto">
+                            <div class="p-2">
+                                <div class="text-xs text-gray-500 mb-2">Filter by Documentation Name</div>
+                                <div *ngFor="let name of uniqueDocumentationNames" 
+                                     class="px-2 py-1 hover:bg-gray-100 cursor-pointer text-sm flex items-center gap-2">
+                                    <input type="checkbox" 
+                                           [checked]="isDocumentationNameSelected(name)"
+                                           (change)="toggleDocumentationNameSelection(name)"
+                                           class="w-4 h-4 rounded focus:ring-2"
+                                           style="accent-color: #2726DD;">
+                                    <span class="truncate" [title]="name">{{ name }}</span>
+                                </div>
+                                <div *ngIf="hasDocumentationNameSelections()" 
+                                     (click)="clearDocumentationNameFilter()"
+                                     class="px-2 py-1 hover:bg-gray-100 cursor-pointer text-sm text-red-600 border-t border-gray-200 mt-1">
+                                    Clear Filter
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </th>
                 <th class="py-3 px-4 text-left font-medium whitespace-nowrap relative" style="width: 18%;" #productTypeDropdown>
                     <div class="flex items-center gap-[4px]">

@@ -27,22 +27,26 @@ export class ReleaseHistoryTableComponent implements OnChanges {
   };
 
   // Checkbox selections for multiple filter values
+  selectedDocumentationNames: string[] = [];
   selectedProductTypes: string[] = [];
   selectedTemplateTypes: string[] = [];
   selectedCreatedBy: string[] = [];
   
   // Filter dropdown states
+  isDocumentationNameFilterOpen = false;
   isProductTypeFilterOpen = false;
   isTemplateTypeFilterOpen = false;
   isCreatedByFilterOpen = false;
   isPublishedDateFilterOpen = false;
   
   // Unique values for filter dropdowns
+  uniqueDocumentationNames: string[] = [];
   uniqueProductTypes: string[] = [];
   uniqueTemplateTypes: string[] = [];
   uniqueCreatedBy: string[] = [];
 
   // ViewChild references for dropdown elements
+  @ViewChild('documentationNameDropdown') documentationNameDropdown!: ElementRef;
   @ViewChild('productTypeDropdown') productTypeDropdown!: ElementRef;
   @ViewChild('templateTypeDropdown') templateTypeDropdown!: ElementRef;
   @ViewChild('publishedDateDropdown') publishedDateDropdown!: ElementRef;
@@ -61,6 +65,9 @@ export class ReleaseHistoryTableComponent implements OnChanges {
     let filtered = [...this.data];
     
     // Apply checkbox filters (multiple selections)
+    if (this.selectedDocumentationNames.length > 0) {
+      filtered = filtered.filter(item => this.selectedDocumentationNames.includes(item.pdf_filename));
+    }
     if (this.selectedProductTypes.length > 0) {
       filtered = filtered.filter(item => this.selectedProductTypes.includes(item.product_type));
     }
@@ -137,12 +144,14 @@ export class ReleaseHistoryTableComponent implements OnChanges {
   // Filter methods
   updateUniqueValues() {
     if (!this.data || this.data.length === 0) {
+      this.uniqueDocumentationNames = [];
       this.uniqueProductTypes = [];
       this.uniqueTemplateTypes = [];
       this.uniqueCreatedBy = [];
       return;
     }
 
+    this.uniqueDocumentationNames = [...new Set(this.data.map((item: any) => item.pdf_filename).filter(Boolean))] as string[];
     this.uniqueProductTypes = [...new Set(this.data.map((item: any) => item.product_type).filter(Boolean))] as string[];
     this.uniqueTemplateTypes = [...new Set(this.data.map((item: any) => item.template_type).filter(Boolean))] as string[];
     this.uniqueCreatedBy = [...new Set(this.data.map((item: any) => item.created_by).filter(Boolean))] as string[];
@@ -150,6 +159,9 @@ export class ReleaseHistoryTableComponent implements OnChanges {
 
   toggleFilter(filterType: string) {
     switch (filterType) {
+      case 'documentationName':
+        this.isDocumentationNameFilterOpen = !this.isDocumentationNameFilterOpen;
+        break;
       case 'productType':
         this.isProductTypeFilterOpen = !this.isProductTypeFilterOpen;
         break;
@@ -215,6 +227,7 @@ export class ReleaseHistoryTableComponent implements OnChanges {
       toDate: ''
     };
     // Clear checkbox selections
+    this.selectedDocumentationNames = [];
     this.selectedProductTypes = [];
     this.selectedTemplateTypes = [];
     this.selectedCreatedBy = [];
@@ -223,6 +236,7 @@ export class ReleaseHistoryTableComponent implements OnChanges {
 
   hasActiveFilters(): boolean {
     return Object.values(this.filters).some(filter => filter !== '') ||
+           this.selectedDocumentationNames.length > 0 ||
            this.selectedProductTypes.length > 0 ||
            this.selectedTemplateTypes.length > 0 ||
            this.selectedCreatedBy.length > 0;
@@ -264,6 +278,9 @@ export class ReleaseHistoryTableComponent implements OnChanges {
     const target = event.target as HTMLElement;
     
     // Check if click is outside all dropdown containers
+    if (this.documentationNameDropdown && !this.documentationNameDropdown.nativeElement.contains(target)) {
+      this.isDocumentationNameFilterOpen = false;
+    }
     if (this.productTypeDropdown && !this.productTypeDropdown.nativeElement.contains(target)) {
       this.isProductTypeFilterOpen = false;
     }
@@ -280,6 +297,7 @@ export class ReleaseHistoryTableComponent implements OnChanges {
 
   // Close all dropdowns
   closeAllDropdowns() {
+    this.isDocumentationNameFilterOpen = false;
     this.isProductTypeFilterOpen = false;
     this.isTemplateTypeFilterOpen = false;
     this.isPublishedDateFilterOpen = false;
@@ -364,6 +382,30 @@ export class ReleaseHistoryTableComponent implements OnChanges {
 
   clearCreatedByFilter(): void {
     this.selectedCreatedBy = [];
+    this.currentPage = 1;
+  }
+
+  // Checkbox selection methods for Documentation Name
+  isDocumentationNameSelected(name: string): boolean {
+    return this.selectedDocumentationNames.includes(name);
+  }
+
+  toggleDocumentationNameSelection(name: string): void {
+    const index = this.selectedDocumentationNames.indexOf(name);
+    if (index > -1) {
+      this.selectedDocumentationNames.splice(index, 1);
+    } else {
+      this.selectedDocumentationNames.push(name);
+    }
+    this.currentPage = 1; // Reset to first page when filter changes
+  }
+
+  hasDocumentationNameSelections(): boolean {
+    return this.selectedDocumentationNames.length > 0;
+  }
+
+  clearDocumentationNameFilter(): void {
+    this.selectedDocumentationNames = [];
     this.currentPage = 1;
   }
 }
