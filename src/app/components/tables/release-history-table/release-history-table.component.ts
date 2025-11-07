@@ -414,4 +414,63 @@ export class ReleaseHistoryTableComponent implements OnChanges {
   onPublishClick(item: any): void {
     this.publishRequested.emit(item);
   }
+
+  // Handle download click event
+  onDownloadClick(item: any): void {
+    if (!item.pdf_url) {
+      console.error('No PDF URL available for download');
+      return;
+    }
+
+    const link = document.createElement('a');
+    link.href = item.pdf_url;
+    link.download = item.pdf_filename || 'document.pdf';
+    link.target = '_blank';
+    
+    // For cross-origin requests, we need to fetch and download
+    if (this.isCrossOrigin(item.pdf_url)) {
+      this.downloadCrossOriginFile(item.pdf_url, item.pdf_filename || 'document.pdf');
+    } else {
+      // For same-origin, simple download works
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+  }
+
+  // Check if URL is cross-origin
+  private isCrossOrigin(url: string): boolean {
+    try {
+      const urlObj = new URL(url, window.location.href);
+      return urlObj.origin !== window.location.origin;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  // Download cross-origin file using fetch API
+  private downloadCrossOriginFile(url: string, filename: string): void {
+    fetch(url)
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        return response.blob();
+      })
+      .then(blob => {
+        const blobUrl = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = blobUrl;
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(blobUrl);
+      })
+      .catch(error => {
+        console.error('Download failed:', error);
+        // Fallback: open in new tab
+        window.open(url, '_blank');
+      });
+  }
 }

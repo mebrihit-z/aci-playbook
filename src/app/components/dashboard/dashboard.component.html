@@ -137,7 +137,7 @@
     </div>
     <!-- release history list-->
     <div>
-        <app-release-history-table [data]="filteredReleaseHistory" [listPerPage]="listNumber" [searchTerm]="searchTerm" />
+        <app-release-history-table [data]="filteredReleaseHistory" [listPerPage]="listNumber" [searchTerm]="searchTerm" (publishRequested)="onPublishDocumentationFromHistory($event)" />
     </div>
     <!--/* Start New Chart */-->
     <div class="flex flex-col justify-center items-center gap-[16px] relative">
@@ -255,6 +255,147 @@
                 </button>
                 <button class="active-button flex justify-center items-center py-[8px] px-[32px]  border border-[#D5D7DA] rounded-[8px] text-sm w-[220px] h-[44px]" (click)="saveCustomizeWidgets()">
                     Save
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Publish Documentation Modal -->
+<div class="" *ngIf="isPublishModalOpen">
+    <div class="overlay"></div>
+    <div class="">
+        <div class="flex flex-col bg-white p-[24px] gap-[16px] w-[100%] md:w-[480px] min-h-[500px] max-h-[90vh] overflow-y-auto rounded-[12px] absolute publish-modal tooltip justify-between">
+            <div class="flex flex-col gap-[16px]">
+                <div class="flex items-center justify-between">
+                    <p class="font-medium text-[20px] text-[#2c2d2e]">Publish Documentation</p>
+                    <button (click)="closePublishModal()" class="flex">
+                        <span class="w-[21.69px] h-[27.9px] bg-[url('./app/resources/icons/black-close-icon.svg')] rounded-lg"></span>
+                    </button>
+                </div>
+                
+                <p class="text-base text-[#344054]">Enter the details for publishing your documentation</p>
+                
+                <!-- Title input field -->
+                <div class="flex flex-col gap-[8px]">
+                    <label class="text-sm font-medium text-[#344054]">Title of Documentation</label>
+                    <input 
+                        type="text" 
+                        placeholder="Enter documentation title" 
+                        class="w-full bg-white border border-[#D5D7DA] rounded-[8px] px-[12px] py-[10px] text-sm text-[#344054] focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                        [(ngModel)]="publishTitle"
+                    />
+                </div>
+                
+                <!-- URL input field -->
+                <div class="flex flex-col gap-[8px]">
+                    <label class="text-sm font-medium text-[#344054]">Confluence Link (URL, Space, or Wiki)</label>
+                    <input 
+                        type="url" 
+                        placeholder="https://example.com/documentation" 
+                        class="w-full bg-white border border-[#D5D7DA] rounded-[8px] px-[12px] py-[10px] text-sm text-[#344054] focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                        [(ngModel)]="publishUrl"
+                    />
+                </div>
+                
+                <!-- Generated Content Preview -->
+                <div class="flex flex-col gap-[8px]">
+                    <label class="text-sm font-medium text-[#344054]">Generated Content Preview</label>
+                    <div class="w-full bg-white border border-[#D5D7DA] rounded-[8px] shadow-[0px_1px_2px_rgba(10,13,18,0.05)] px-[16px] py-[12px] max-h-[200px] overflow-y-auto generated-content-preview">
+                        <div class="text-sm text-[#344054] generated-content">
+                            <markdown [data]="selectedDocumentationForPublish?.generated_content || 'No content available'"></markdown>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Action buttons -->
+            <div class="flex gap-[12px] mt-[16px] w-[100%] text-base font-medium">
+                <button class="bg-white flex justify-center items-center py-[10px] px-[24px] border border-[#D5D7DA] rounded-[8px] w-[50%] text-[#344054] hover:bg-gray-50 transition-colors" (click)="closePublishModal()">
+                    Cancel
+                </button>
+                <button 
+                    class="active-button flex justify-center items-center py-[10px] px-[24px] border border-[#D5D7DA] rounded-[8px] w-[50%] text-white hover:bg-primary-cta-hover transition-colors" 
+                    (click)="publishDocumentation()"
+                    [disabled]="isPublishingDocumentation || !publishTitle || !publishUrl">
+                    {{ isPublishingDocumentation ? 'Publishing...' : 'Publish' }}
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Custom Alert Modal -->
+<div class="" *ngIf="isAlertModalOpen">
+    <div class="overlay"></div>
+    <div class="">
+        <div class="flex flex-col bg-white p-[24px] gap-[20px] w-[100%] md:w-[420px] min-h-[220px] rounded-[12px] absolute alert-modal tooltip">
+            <div class="flex flex-col gap-[16px]">
+                <!-- Alert icon and title -->
+                <div class="flex items-center gap-[12px]">
+                    <!-- Success Icon -->
+                    <div *ngIf="alertType === 'success'" class="flex-shrink-0">
+                        <svg class="w-[48px] h-[48px]" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <circle cx="24" cy="24" r="24" fill="#2726DD" fill-opacity="0.1"/>
+                            <circle cx="24" cy="24" r="18" fill="#2726DD"/>
+                            <path d="M18 24L22 28L30 20" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </div>
+                    <!-- Error Icon -->
+                    <div *ngIf="alertType === 'error'" class="flex-shrink-0">
+                        <svg class="w-[48px] h-[48px]" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <circle cx="24" cy="24" r="24" fill="#EF4444" fill-opacity="0.1"/>
+                            <circle cx="24" cy="24" r="18" fill="#EF4444"/>
+                            <path d="M20 20L28 28M28 20L20 28" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </div>
+                    <!-- Warning Icon -->
+                    <div *ngIf="alertType === 'warning'" class="flex-shrink-0">
+                        <svg class="w-[48px] h-[48px]" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <circle cx="24" cy="24" r="24" fill="#F59E0B" fill-opacity="0.1"/>
+                            <circle cx="24" cy="24" r="18" fill="#F59E0B"/>
+                            <path d="M24 18V26M24 30V30.5" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </div>
+                    <!-- Info Icon -->
+                    <div *ngIf="alertType === 'info'" class="flex-shrink-0">
+                        <svg class="w-[48px] h-[48px]" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <circle cx="24" cy="24" r="24" fill="#3B82F6" fill-opacity="0.1"/>
+                            <circle cx="24" cy="24" r="18" fill="#3B82F6"/>
+                            <path d="M24 22V30M24 18V18.5" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </div>
+                    <div class="flex flex-col flex-1">
+                        <h3 class="text-[20px] font-semibold text-[#2c2d2e]">{{ alertTitle }}</h3>
+                    </div>
+                </div>
+                
+                <!-- Alert message -->
+                <p class="text-base text-[#344054] leading-relaxed">{{ alertMessage }}</p>
+            </div>
+            
+            <!-- Action buttons -->
+            <div class="flex gap-[12px] mt-[8px] w-[100%]">
+                <button 
+                    *ngIf="alertButtonSecondaryText"
+                    class="bg-white flex justify-center items-center py-[10px] px-[24px] border border-[#D5D7DA] rounded-[8px] w-[50%] text-[#344054] text-base font-medium hover:bg-gray-50 transition-colors" 
+                    (click)="closeAlert()">
+                    {{ alertButtonSecondaryText }}
+                </button>
+                <button 
+                    class="flex justify-center items-center py-[10px] px-[24px] border border-[#D5D7DA] rounded-[8px] text-white text-base font-medium transition-colors"
+                    [ngClass]="{
+                        'bg-[#2726DD] hover:bg-[#14136F] w-[50%]': alertType === 'success' && alertButtonSecondaryText,
+                        'bg-[#2726DD] hover:bg-[#14136F] w-[100%]': alertType === 'success' && !alertButtonSecondaryText,
+                        'bg-[#EF4444] hover:bg-[#DC2626] w-[50%]': alertType === 'error' && alertButtonSecondaryText,
+                        'bg-[#EF4444] hover:bg-[#DC2626] w-[100%]': alertType === 'error' && !alertButtonSecondaryText,
+                        'bg-[#F59E0B] hover:bg-[#D97706] w-[50%]': alertType === 'warning' && alertButtonSecondaryText,
+                        'bg-[#F59E0B] hover:bg-[#D97706] w-[100%]': alertType === 'warning' && !alertButtonSecondaryText,
+                        'bg-[#3B82F6] hover:bg-[#2563EB] w-[50%]': alertType === 'info' && alertButtonSecondaryText,
+                        'bg-[#3B82F6] hover:bg-[#2563EB] w-[100%]': alertType === 'info' && !alertButtonSecondaryText
+                    }"
+                    (click)="closeAlert()">
+                    {{ alertButtonText }}
                 </button>
             </div>
         </div>
