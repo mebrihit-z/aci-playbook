@@ -486,14 +486,14 @@ export class DocumentationComponent implements OnInit, OnDestroy {
     });
   
     const sourceStrings = sources.map(s => s.newSource);
-  
+    console.log("generatedFileName in generateDocumentation", this.documentationName);
     const formData = new FormData();
     formData.append("created_by", this.userName);
     formData.append("release_date", releaseDate);
     formData.append("product_type", this.onboardingService.getSelectedProductId());
     formData.append("template_type", this.documentationService.selectedTemplateId);
     formData.append("data_sources", JSON.stringify(sourceStrings));
-    formData.append("documentation_name", this.documentationName || 'Untitled Documentation');
+    formData.append("pdf_file_name", this.documentationName || 'Untitled Documentation');
     for (let i = 0; i < files.length; i++) {
       formData.append('files', files[i]);
     }
