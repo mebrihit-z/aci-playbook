@@ -134,7 +134,7 @@
                         </div>
                     </div>
                 </th>
-                <th class="py-3 px-4 text-left font-medium whitespace-nowrap relative" style="width: 20%;" #createdByDropdown>
+                <th class="py-3 px-4 text-left font-medium whitespace-nowrap relative" style="width: 12%;" #createdByDropdown>
                     <div class="flex items-center gap-[4px]">
                         Created by
                         <button (click)="toggleFilter('createdBy')" class="w-[16px] h-[16px] bg-[url('assets/icons/filter-icon.svg')] hover:opacity-70 transition-opacity cursor-pointer">
@@ -161,7 +161,7 @@
                         </div>
                     </div>
                 </th>
-                <th class="py-3 px-4 text-left font-medium whitespace-nowrap" style="width: 10%;"></th>
+                <th class="py-3 px-4 text-left font-medium whitespace-nowrap" style="width: 18%;"></th>
             </tr>
         </thead>
         <tbody>
@@ -183,7 +183,7 @@
                 <td class="py-3 px-4 whitespace-nowrap" [innerHTML]="(item.release_date | date:'MM/dd/yyyy') | highlight: searchTerm"></td>
                 <td class="py-3 px-4">
                     <div class="flex justify-start items-center gap-[10px]">
-                        <span class="text-primary bg-[#e9eef8] flex rounded-[200px] w-[40px] h-[40px] justify-center items-center">{{ getFirstLetter(item.created_by) }}</span>
+                        <!-- <span class="text-primary bg-[#e9eef8] flex rounded-[200px] w-[40px] h-[40px] justify-center items-center">{{ getFirstLetter(item.created_by) }}</span> -->
                         <span class="whitespace-nowrap" [innerHTML]="item.created_by | highlight: searchTerm"></span>
                     </div>
                 </td>
