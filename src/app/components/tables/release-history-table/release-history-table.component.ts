@@ -1,4 +1,4 @@
-import { Component, Input, OnChanges, SimpleChanges, ElementRef, HostListener, ViewChild } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges, ElementRef, HostListener, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HighlightPipe } from '../../../pipes/highlight.pipe'; 
@@ -14,6 +14,7 @@ export class ReleaseHistoryTableComponent implements OnChanges {
   @Input() data!: any; // Input property to receive data from the parent
   @Input() listPerPage!: number;
   @Input() searchTerm: string = ''; // Input property to receive search term from parent
+  @Output() publishRequested = new EventEmitter<any>(); // Event emitter for publish action
   
   currentPage = 1;
   
@@ -407,5 +408,10 @@ export class ReleaseHistoryTableComponent implements OnChanges {
   clearDocumentationNameFilter(): void {
     this.selectedDocumentationNames = [];
     this.currentPage = 1;
+  }
+
+  // Handle publish click event
+  onPublishClick(item: any): void {
+    this.publishRequested.emit(item);
   }
 }

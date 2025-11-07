@@ -34,6 +34,9 @@ export class ApiService {
   getDocumentationHistory() {
     return this.http.get(this.documentationUrl);
   }
+  getDocumentationContent(documentId: string) {
+    return this.http.get(`${this.documentationUrl}/${documentId}`);
+  }
   getTemplates() {
     return this.http.get(this.templatesUrl);
   }

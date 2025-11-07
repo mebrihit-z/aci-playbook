@@ -69,6 +69,9 @@ export class DocumentationComponent implements OnInit, OnDestroy {
   publishTitle: string = '';
   publishUrl: string = '';
   
+  // Selected documentation item for publishing
+  selectedDocumentationForPublish: any = null;
+  
   // Documentation name for generation
   documentationName: string = '';
   
@@ -339,6 +342,7 @@ export class DocumentationComponent implements OnInit, OnDestroy {
     this.isPublishModalOpen = false;
     this.publishTitle = '';
     this.publishUrl = '';
+    this.selectedDocumentationForPublish = null;
   }
   
   // show custom alert modal
@@ -368,7 +372,16 @@ export class DocumentationComponent implements OnInit, OnDestroy {
       return;
     }
 
-    const content = this.generatedContent || this.releaseNotes;
+    let content = '';
+    
+    // Check if we're publishing from history (selected documentation)
+    if (this.selectedDocumentationForPublish && this.selectedDocumentationForPublish.generated_content) {
+      content = this.selectedDocumentationForPublish.generated_content;
+    } else {
+      // Otherwise use the current generated content
+      content = this.generatedContent || this.releaseNotes;
+    }
+    
     if (!content || content.trim() === '') {
       this.showAlert('No Content', 'No documentation content available to publish. Please generate documentation first.', 'warning', 'Understood');
       return;
@@ -392,6 +405,9 @@ export class DocumentationComponent implements OnInit, OnDestroy {
         
         // Close modal after successful publish
         this.closePublishModal();
+        
+        // Reset selected documentation
+        this.selectedDocumentationForPublish = null;
         
         // Show success message
         this.showAlert('Success!', 'Documentation published successfully!', 'success', 'OK!');
@@ -421,6 +437,57 @@ export class DocumentationComponent implements OnInit, OnDestroy {
         this.showAlert('Publishing Failed', errorMessage, 'error', 'Try Again');
       }
     });
+  }
+  
+  // Handle publish documentation from history
+  onPublishDocumentationFromHistory(documentationItem: any) {
+    console.log('Publishing documentation from history:', documentationItem);
+    
+    // Check if the documentation item has a generated_content field
+    if (!documentationItem.generated_content) {
+      // If the API doesn't return generated_content in the history, we need to fetch it
+      // For now, we'll show a message that we're fetching it
+      this.isPublishingDocumentation = true;
+      
+      // Fetch the documentation content from the API
+      this.apiService.getDocumentationContent(documentationItem.id).subscribe({
+        next: (data: any) => {
+          this.isPublishingDocumentation = false;
+          documentationItem.generated_content = data.generated_content || data.content;
+          this.selectedDocumentationForPublish = documentationItem;
+          
+          // Pre-fill the title with the filename (without extension)
+          this.publishTitle = documentationItem.pdf_filename?.replace(/\.(pdf|doc|docx)$/i, '') || '';
+          this.publishUrl = '';
+          
+          // Open publish modal
+          this.openPublishModal();
+        },
+        error: (error) => {
+          console.error('Error fetching documentation content:', error);
+          this.isPublishingDocumentation = false;
+          
+          // If fetching fails, try to use the PDF URL as a fallback
+          // This is a workaround - ideally the API should provide the content
+          this.showAlert(
+            'Content Unavailable',
+            'Unable to fetch the documentation content for publishing. The API may need to be updated to include generated_content in the documentation history response.',
+            'warning',
+            'OK'
+          );
+        }
+      });
+    } else {
+      // Content is available, proceed with publishing
+      this.selectedDocumentationForPublish = documentationItem;
+      
+      // Pre-fill the title with the filename (without extension)
+      this.publishTitle = documentationItem.pdf_filename?.replace(/\.(pdf|doc|docx)$/i, '') || '';
+      this.publishUrl = '';
+      
+      // Open publish modal
+      this.openPublishModal();
+    }
   }
   // create document
   createDocument() {
@@ -817,6 +884,7 @@ export class DocumentationComponent implements OnInit, OnDestroy {
     this.apiService.getDocumentationHistory().subscribe({
       next: async (data: any) => {
         this.releaseHistory = Array.isArray(data) ? data : [];
+        console.log("releaseHistory in gettingDocumentationHistoryFromApi", this.releaseHistory);
         this.filteredReleaseHistory = [...this.releaseHistory];
       },  
       error: (err) => {

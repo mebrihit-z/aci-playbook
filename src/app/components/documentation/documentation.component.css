@@ -33,8 +33,9 @@
 
 /* publish modal */
 .publish-modal{
-    left: calc(50% - 480px/2);
-    top: calc(50% - 320px/2);
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
     box-shadow: 0px 20px 24px -4px rgba(16, 24, 40, 0.08), 0px 8px 8px -4px rgba(16, 24, 40, 0.03);
 }
 
@@ -196,4 +197,52 @@
 #jira-source-checkbox,
 #pdf-source-checkbox {
     accent-color: #2726DD;
+}
+
+/* Generated Content Preview styling */
+.generated-content-preview {
+    background-color: #FAFAFA;
+    position: relative;
+}
+
+.generated-content-preview .generated-content {
+    line-height: 1.6;
+    color: #344054;
+}
+
+.generated-content-preview .generated-content h1,
+.generated-content-preview .generated-content h2,
+.generated-content-preview .generated-content h3,
+.generated-content-preview .generated-content h4,
+.generated-content-preview .generated-content h5,
+.generated-content-preview .generated-content h6 {
+    color: #2C2D2E;
+    font-weight: 600;
+    margin-top: 12px;
+    margin-bottom: 8px;
+}
+
+.generated-content-preview .generated-content p {
+    margin-bottom: 8px;
+}
+
+.generated-content-preview .generated-content ul,
+.generated-content-preview .generated-content ol {
+    margin-left: 20px;
+    margin-bottom: 8px;
+}
+
+.generated-content-preview .generated-content code {
+    background-color: #F3F4F6;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.875em;
+}
+
+.generated-content-preview .generated-content pre {
+    background-color: #F3F4F6;
+    padding: 12px;
+    border-radius: 6px;
+    overflow-x: auto;
+    margin-bottom: 8px;
 }

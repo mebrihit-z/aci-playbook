@@ -188,7 +188,11 @@
                     </div>
                 </td>
                 <td class="py-3 px-4">
-                    <a class="text-primary font-semibold" href="{{ item.pdf_url }}" target="_blank">Download</a>
+                    <div class="flex gap-3 items-center">
+                        <a class="text-primary font-semibold hover:underline" href="{{ item.pdf_url }}" target="_blank">Download</a>
+                        <span class="text-gray-300">|</span>
+                        <button class="text-[#2726DD] font-semibold hover:underline" (click)="onPublishClick(item)">Publish</button>
+                    </div>
                 </td>
             </tr>
             <!-- No results message -->
