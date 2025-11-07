@@ -69,6 +69,9 @@ export class DocumentationComponent implements OnInit, OnDestroy {
   publishTitle: string = '';
   publishUrl: string = '';
   
+  // Documentation name for generation
+  documentationName: string = '';
+  
   // Custom alert modal properties
   isAlertModalOpen: boolean = false;
   alertTitle: string = '';
@@ -490,6 +493,7 @@ export class DocumentationComponent implements OnInit, OnDestroy {
     formData.append("product_type", this.onboardingService.getSelectedProductId());
     formData.append("template_type", this.documentationService.selectedTemplateId);
     formData.append("data_sources", JSON.stringify(sourceStrings));
+    formData.append("documentation_name", this.documentationName || 'Untitled Documentation');
     for (let i = 0; i < files.length; i++) {
       formData.append('files', files[i]);
     }

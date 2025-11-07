@@ -104,7 +104,7 @@
 </div>
 <!-- second doc section -->
 <div class="h-full w-full" [ngClass]="(documentationGeneratingPage)? '' : 'hidden'">
-    <div class="flex flex-col justify-center items-center mt-[5%]">
+    <div class="flex flex-col justify-center items-center">
         <!-- Back button -->
         <div class="w-full max-w-4xl mb-4">
             <button 
@@ -116,13 +116,25 @@
                 Back to Documentation History
             </button>
         </div>
-        <div class="flex flex-col justify-center items-center text-[#666f8d]">
+        <div class="flex flex-col justify-center items-center text-[#666f8d] mt-[-32px]">
             <div class="flex">
                 <img src="assets/icons/docu-bot-icon.svg" alt="docu-bot-icon" class="w-[110.2px] h-[74.14px] scale-[0.6]">
             </div>
             <h4>Meet DocuBot!</h4>
             <h6>Your AI assistant for generating documentation.</h6>
             <div class="flex flex-col gap-4 justify-center items-center mt-3">
+                <!-- documentation name input section -->
+                <div class="flex flex-col gap-[16px] w-90">
+                    <div class="flex flex-col gap-[8px]">
+                        <label class="text-xs font-medium text-[#344054]">Documentation Name</label>
+                        <input 
+                            type="text" 
+                            placeholder="Enter documentation name" 
+                            class="w-full bg-white border border-[#D5D7DA] rounded-[8px] px-[12px] py-[10px] text-sm text-[#344054] focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                            [(ngModel)]="documentationName"
+                        />
+                    </div>
+                </div>
                 <!-- select product section -->
                 <div class="flex flex-col gap-[16px]" #botProductDropdown>
                     <div class="relative w-90">
@@ -574,7 +586,7 @@
                 
                 <!-- URL input field -->
                 <div class="flex flex-col gap-[8px]">
-                    <label class="text-sm font-medium text-[#344054]">Confluence URL where the Document should be published</label>
+                    <label class="text-sm font-medium text-[#344054]">Confluence Link (URL, Space, or Wiki)</label>
                     <input 
                         type="url" 
                         placeholder="https://example.com/documentation" 
