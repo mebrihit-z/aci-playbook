@@ -588,16 +588,16 @@ export class DocumentationComponent implements OnInit, OnDestroy {
         return;
       }
 
-    const doc = new jsPDF();
+      const doc = new jsPDF();
       const pageWidth = 190; // Page width in mm
       const pageHeight = 280; // Page height in mm
-      const margin = 20; // Increased margin for cleaner look
+      const margin = 20; // Standard margin
       let yPosition = margin;
       
       // Parse and format the markdown content
       const formattedContent = this.parseMarkdownForPDF(this.releaseNotes);
       
-      // Add content with proper formatting
+      // Add content with proper formatting - matching published document style
       for (const element of formattedContent) {
         // Skip spacing elements
         if (element.type === 'spacing') {
@@ -611,37 +611,37 @@ export class DocumentationComponent implements OnInit, OnDestroy {
           yPosition = margin;
         }
         
-        // Set font based on element type - matching the clean document style
+        // Set font based on element type - matching the published document style
         if (element.type === 'h1') {
-          doc.setFontSize(18); // Larger for main title
+          doc.setFontSize(20); // Larger for main title - matches Confluence H1
           doc.setFont('helvetica', 'bold');
           doc.setTextColor(0, 0, 0);
         } else if (element.type === 'h2') {
-          doc.setFontSize(12); // Standard size for section headings
+          doc.setFontSize(16); // Section headings - matches Confluence H2
           doc.setFont('helvetica', 'bold');
           doc.setTextColor(0, 0, 0);
         } else if (element.type === 'h3') {
-          doc.setFontSize(11);
+          doc.setFontSize(14); // Sub-section headings - matches Confluence H3
           doc.setFont('helvetica', 'bold');
           doc.setTextColor(0, 0, 0);
         } else if (element.type === 'h4') {
-          doc.setFontSize(10);
+          doc.setFontSize(12); // Smaller headings - matches Confluence H4
           doc.setFont('helvetica', 'bold');
           doc.setTextColor(0, 0, 0);
         } else if (element.type === 'numbered_list') {
-          doc.setFontSize(10);
+          doc.setFontSize(11); // Standard body text for lists
           doc.setFont('helvetica', 'normal');
           doc.setTextColor(0, 0, 0);
         } else if (element.type === 'bullet_list') {
-          doc.setFontSize(10);
+          doc.setFontSize(11); // Standard body text for lists
           doc.setFont('helvetica', 'normal');
           doc.setTextColor(0, 0, 0);
         } else if (element.type === 'bold') {
-          doc.setFontSize(10);
+          doc.setFontSize(11); // Standard body text, bold
           doc.setFont('helvetica', 'bold');
           doc.setTextColor(0, 0, 0);
         } else {
-          doc.setFontSize(10);
+          doc.setFontSize(11); // Standard body text
           doc.setFont('helvetica', 'normal');
           doc.setTextColor(0, 0, 0);
         }
@@ -652,34 +652,36 @@ export class DocumentationComponent implements OnInit, OnDestroy {
             if (line && line.trim()) {
               let xPosition = margin;
               if (element.type === 'bullet_list') {
-                xPosition = margin + 8; // Indent bullet points
+                xPosition = margin + 5; // Indent bullet points
               } else if (element.type === 'numbered_list') {
-                xPosition = margin + 8; // Indent numbered items
+                xPosition = margin + 5; // Indent numbered items
               }
               doc.text(line, xPosition, yPosition);
-              yPosition += 5; // Consistent line spacing
+              yPosition += 6; // Consistent line spacing - matches typical document spacing
             }
           }
         } else if (element.text && element.text.trim()) {
           let xPosition = margin;
           if (element.type === 'bullet_list') {
-            xPosition = margin + 8;
+            xPosition = margin + 5;
           } else if (element.type === 'numbered_list') {
-            xPosition = margin + 8;
+            xPosition = margin + 5;
           }
           doc.text(element.text, xPosition, yPosition);
-          yPosition += 5;
+          yPosition += 6;
         }
         
-        // Add proper spacing after different element types
+        // Add proper spacing after different element types - matching published format
         if (element.type === 'h1') {
-          yPosition += 10; // More space after main title
-        } else if (element.type.startsWith('h')) {
-          yPosition += 6; // Space after section headings
+          yPosition += 8; // Space after main title
+        } else if (element.type === 'h2') {
+          yPosition += 6; // Space after major sections
+        } else if (element.type === 'h3' || element.type === 'h4') {
+          yPosition += 4; // Space after sub-sections
         } else if (element.type === 'numbered_list' || element.type === 'bullet_list') {
-          yPosition += 3; // Small space after list items
+          yPosition += 2; // Small space after list items
         } else if (element.type === 'text' || element.type === 'bold') {
-          yPosition += 4; // Space after paragraphs
+          yPosition += 3; // Space after paragraphs
         }
       }
       
@@ -709,48 +711,48 @@ export class DocumentationComponent implements OnInit, OnDestroy {
       const line = lines[i].trim();
       
       if (!line) {
-        elements.push({ type: 'spacing', height: 3 });
+        elements.push({ type: 'spacing', height: 4 });
         continue;
       }
       
       try {
-        // Headers
+        // Headers - with updated height calculations matching new font sizes
         if (line.startsWith('# ')) {
           const text = line.substring(2).trim();
           if (text) {
             const cleanText = this.removeBoldMarkers(text);
-            const wrappedLines = this.wrapText(cleanText, 160);
-            elements.push({ type: 'h1', text: cleanText, lines: wrappedLines, height: wrappedLines.length * 6 + 10 });
+            const wrappedLines = this.wrapText(cleanText, 150, 20); // H1: 20pt font
+            elements.push({ type: 'h1', text: cleanText, lines: wrappedLines, height: wrappedLines.length * 8 + 8 });
           }
         } else if (line.startsWith('## ')) {
           const text = line.substring(3).trim();
           if (text) {
             const cleanText = this.removeBoldMarkers(text);
-            const wrappedLines = this.wrapText(cleanText, 160);
-            elements.push({ type: 'h2', text: cleanText, lines: wrappedLines, height: wrappedLines.length * 6 + 8 });
+            const wrappedLines = this.wrapText(cleanText, 150, 16); // H2: 16pt font
+            elements.push({ type: 'h2', text: cleanText, lines: wrappedLines, height: wrappedLines.length * 7 + 6 });
           }
         } else if (line.startsWith('### ')) {
           const text = line.substring(4).trim();
           if (text) {
             const cleanText = this.removeBoldMarkers(text);
-            const wrappedLines = this.wrapText(cleanText, 160);
-            elements.push({ type: 'h3', text: cleanText, lines: wrappedLines, height: wrappedLines.length * 6 + 6 });
+            const wrappedLines = this.wrapText(cleanText, 150, 14); // H3: 14pt font
+            elements.push({ type: 'h3', text: cleanText, lines: wrappedLines, height: wrappedLines.length * 6 + 4 });
           }
         } else if (line.startsWith('#### ')) {
           const text = line.substring(5).trim();
           if (text) {
             const cleanText = this.removeBoldMarkers(text);
-            const wrappedLines = this.wrapText(cleanText, 160);
-            elements.push({ type: 'h4', text: cleanText, lines: wrappedLines, height: wrappedLines.length * 6 + 6 });
+            const wrappedLines = this.wrapText(cleanText, 150, 12); // H4: 12pt font
+            elements.push({ type: 'h4', text: cleanText, lines: wrappedLines, height: wrappedLines.length * 6 + 4 });
           }
         }
-        // Lists
+        // Lists - with updated spacing
         else if (line.startsWith('- ') || line.startsWith('* ')) {
           const text = line.substring(2).trim();
           if (text) {
             const cleanText = this.removeBoldMarkers(text);
-            const wrappedLines = this.wrapText(`• ${cleanText}`, 155);
-            elements.push({ type: 'bullet_list', text: cleanText, lines: wrappedLines, height: wrappedLines.length * 5 + 3 });
+            const wrappedLines = this.wrapText(`• ${cleanText}`, 145, 11); // 11pt font for lists
+            elements.push({ type: 'bullet_list', text: cleanText, lines: wrappedLines, height: wrappedLines.length * 6 + 2 });
           }
         } else if (/^\d+\.\s/.test(line)) {
           const match = line.match(/^(\d+)\.\s(.+)$/);
@@ -758,8 +760,8 @@ export class DocumentationComponent implements OnInit, OnDestroy {
             const number = match[1];
             const text = match[2].trim();
             const cleanText = this.removeBoldMarkers(text);
-            const wrappedLines = this.wrapText(`${number}. ${cleanText}`, 155);
-            elements.push({ type: 'numbered_list', text: cleanText, lines: wrappedLines, height: wrappedLines.length * 5 + 3 });
+            const wrappedLines = this.wrapText(`${number}. ${cleanText}`, 145, 11); // 11pt font for lists
+            elements.push({ type: 'numbered_list', text: cleanText, lines: wrappedLines, height: wrappedLines.length * 6 + 2 });
           }
         }
         // Tables (basic support)
@@ -768,7 +770,7 @@ export class DocumentationComponent implements OnInit, OnDestroy {
           if (cells.length > 1) {
             const cleanCells = cells.map(cell => this.removeBoldMarkers(cell));
             const tableLine = cleanCells.join(' | ');
-            const wrappedLines = this.wrapText(tableLine, 160);
+            const wrappedLines = this.wrapText(tableLine, 150, 11);
             elements.push({ type: 'table', text: tableLine, lines: wrappedLines, height: wrappedLines.length * 6 + 3 });
           }
         }
@@ -780,7 +782,7 @@ export class DocumentationComponent implements OnInit, OnDestroy {
             elements.push(...boldElements);
           } else {
             const cleanText = this.removeBoldMarkers(line);
-            const wrappedLines = this.wrapText(cleanText, 160);
+            const wrappedLines = this.wrapText(cleanText, 150, 11); // 11pt font for body text
             elements.push({ type: 'text', text: cleanText, lines: wrappedLines, height: wrappedLines.length * 6 + 3 });
           }
         }
@@ -788,7 +790,7 @@ export class DocumentationComponent implements OnInit, OnDestroy {
         console.error('Error parsing line:', line, error);
         // Fallback to regular text
         const cleanText = this.removeBoldMarkers(line);
-        const wrappedLines = this.wrapText(cleanText, 160);
+        const wrappedLines = this.wrapText(cleanText, 150, 11);
         elements.push({ type: 'text', text: cleanText, lines: wrappedLines, height: wrappedLines.length * 6 + 3 });
       }
     }
@@ -816,7 +818,7 @@ export class DocumentationComponent implements OnInit, OnDestroy {
         // Bold text - remove ** markers
         const boldText = part.slice(2, -2);
         if (boldText.trim()) {
-          const wrappedLines = this.wrapText(boldText, 160);
+          const wrappedLines = this.wrapText(boldText, 150, 11);
           elements.push({ 
             type: 'bold', 
             text: boldText, 
@@ -826,7 +828,7 @@ export class DocumentationComponent implements OnInit, OnDestroy {
         }
       } else if (part.trim()) {
         // Regular text
-        const wrappedLines = this.wrapText(part, 160);
+        const wrappedLines = this.wrapText(part, 150, 11);
         elements.push({ 
           type: 'text', 
           text: part, 
@@ -839,8 +841,8 @@ export class DocumentationComponent implements OnInit, OnDestroy {
     return elements;
   }
 
-  // Helper method to wrap text
-  private wrapText(text: string, maxWidth: number): string[] {
+  // Helper method to wrap text - with font size awareness for better wrapping
+  private wrapText(text: string, maxWidth: number, fontSize: number = 11): string[] {
     if (!text || typeof text !== 'string') {
       return [];
     }
@@ -849,11 +851,16 @@ export class DocumentationComponent implements OnInit, OnDestroy {
     const lines: string[] = [];
     let currentLine = '';
     
+    // Calculate approximate characters per line based on font size and page width
+    // Average character width is approximately fontSize * 0.5 mm in Helvetica
+    const charWidth = fontSize * 0.5;
+    const maxChars = Math.floor(maxWidth / charWidth);
+    
     for (const word of words) {
       if (!word) continue; // Skip empty words
       
       const testLine = currentLine + (currentLine ? ' ' : '') + word;
-      if (testLine.length <= maxWidth / 2.8) { // More precise character width for cleaner wrapping
+      if (testLine.length <= maxChars) {
         currentLine = testLine;
       } else {
         if (currentLine) {
