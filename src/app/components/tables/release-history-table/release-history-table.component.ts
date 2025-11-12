@@ -421,7 +421,7 @@ export class ReleaseHistoryTableComponent implements OnChanges {
       console.error('No PDF URL available for download');
       return;
     }
-
+    console.log("item.pdf_url in onDownloadClick", item.pdf_url);
     const link = document.createElement('a');
     link.href = item.pdf_url;
     link.download = item.pdf_filename || 'document.pdf';
