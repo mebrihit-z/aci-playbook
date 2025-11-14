@@ -15,7 +15,8 @@ export class ApiService {
   baseUrl = `${environment.apiBaseUrl}/api/v1`;
   // documentation
   documentationUrl = `${environment.documentationUrl}/api/v1/generated-documents`;
-  templatesUrl = `${environment.documentationUrl}/api/v1/documentation-types`;
+  // templatesUrl = `${environment.documentationUrl}/api/v1/documentation-types`;
+  templatesUrl = `${environment.documentationUrl}/api/v1/documentation-types/product`;
   documentationBaseUrl = `${environment.documentationUrl}/api/v1`;
 
   // constructor
@@ -37,8 +38,8 @@ export class ApiService {
   getDocumentationContent(documentId: string) {
     return this.http.get(`${this.documentationUrl}/${documentId}`);
   }
-  getTemplates() {
-    return this.http.get(this.templatesUrl);
+  getTemplates(productId: any) {
+    return this.http.get(`${this.templatesUrl}/${productId}`);
   }
   getSelectedQuestion<T>(endpoint: string): Observable<T> {
     return this.http.get<T>(`${this.chatIdUrl}/${endpoint}`);

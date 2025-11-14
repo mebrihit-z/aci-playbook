@@ -105,18 +105,42 @@ export class DocumentationComponent implements OnInit, OnDestroy {
     if(this.onboardingService.getProductList().length > 0) {
         this.products = this.onboardingService.getProductList();
         this.selectedProduct = this.onboardingService.getSelectedProduct();
+        console.log('Initial product loaded:', this.selectedProduct);
+        console.log('Initial product ID:', this.onboardingService.getSelectedProductId());
+        // Check if full product list (with IDs) is also loaded
+        if(this.onboardingService.getFullProductList().length === 0) {
+          console.warn('Product list exists but full product list (with IDs) is empty. Fetching from API...');
+          this.gettingProductListFromApi();
+        } else {
+          console.log('Full product list already loaded:', this.onboardingService.getFullProductList().length, 'products');
+        }
     } else {
+        console.log('No products in onboarding service, fetching from API...');
         this.gettingProductListFromApi();
     }
     
     // Subscribe to selected product changes from onboarding service (for user settings)
+    // This subscription is mainly for when products are changed from other components (like settings)
     this.subscriptions.push(
       this.onboardingService.getSelectedProduct$().subscribe(product => {
-        if (product && product !== this.selectedProduct) {
+        console.log("========== ONBOARDING SERVICE PRODUCT SUBSCRIPTION ==========");
+        console.log("Onboarding service product changed to:", product);
+        console.log("Current component product:", this.selectedProduct);
+        console.log("Should update?", product && product !== this.selectedProduct);
+        
+        if (product && product !== this.selectedProduct && product !== '') {
+          console.log("✓ Updating documentation service to match onboarding service");
+          // Update LOCAL product first to prevent loops
           this.selectedProduct = product;
-          // Also update the documentation service to keep them in sync
+          // Update the documentation service to keep them in sync (but don't trigger from the subscription)
           this.documentationService.setSelectedProduct(product);
+          // Fetch templates with the updated product
+          console.log("✓ Fetching templates from onboarding subscription");
+          this.fetchTemplatesForProduct();
+        } else {
+          console.log("✗ Skipping update - product unchanged or empty");
         }
+        console.log("================================================================");
       })
     );
    
@@ -168,9 +192,23 @@ export class DocumentationComponent implements OnInit, OnDestroy {
       })
     );
     
+    // Subscribe to documentation service product changes (mainly for keeping UI in sync)
+    // Template fetching is handled by the onboarding service subscription above
     this.subscriptions.push(
       this.documentationService.selectedProduct$.subscribe(product => {
-        this.selectedProduct = product;
+        console.log("========== DOCUMENTATION SERVICE PRODUCT SUBSCRIPTION ==========");
+        console.log("Documentation service product changed to:", product);
+        console.log("Current component product:", this.selectedProduct);
+        
+        // Only update the local product if it's different
+        // Don't fetch templates here to avoid duplicate API calls
+        if (product && product !== this.selectedProduct) {
+          console.log("✓ Syncing component product with documentation service");
+          this.selectedProduct = product;
+        } else {
+          console.log("✗ Product unchanged, no sync needed");
+        }
+        console.log("================================================================");
       })
     );
     
@@ -190,24 +228,49 @@ export class DocumentationComponent implements OnInit, OnDestroy {
     // Update generate button state based on initial data
     this.updateGenerateButtonState();
     
-    // Subscribe to get templates from API
+    // Fetch templates for the initial product
+    this.fetchTemplatesForProduct();
+    
+    this.userService.setIsUserHasAccountSetup(true);
+    this.gettingDocumentationHistoryFromApi();
+  }
+  
+  // Fetch templates based on selected product
+  fetchTemplatesForProduct() {
+    const selectedProductName = this.onboardingService.getSelectedProduct();
+    const productId = this.onboardingService.getSelectedProductId();
+    console.log("========== FETCHING TEMPLATES ==========");
+    console.log("Selected product name:", selectedProductName);
+    console.log("Selected product ID:", productId);
+    console.log("========================================");
+    
+    if (!productId) {
+      console.error('No product ID available, skipping template fetch');
+      console.error('Product name:', selectedProductName);
+      console.error('Full product list:', this.onboardingService.getFullProductList());
+      return;
+    }
+    
     this.subscriptions.push(
-      this.apiService.getTemplates().subscribe({
+      this.apiService.getTemplates(productId).subscribe({
         next: (data: any) => {
+          console.log("✓ Templates received for productId:", productId);
+          console.log("✓ documentation_types:", data.documentation_types);
+          // this.templates = data.documentation_types[0].fields;
           this.templates = data.documentation_types;
+          console.log("✓ Templates loaded:", this.templates);
+          // this.templates = data.documentation_types;
           this.documentationService.setTemplatesList(data.documentation_types);
         },
         error: (err: any) => {
-          console.error('Error fetching templates:', err);
+          console.error('✗ Error fetching templates:', err);
+          console.error('✗ ProductId used:', productId);
           // Fallback to empty array or default templates
           this.templates = [];
           this.documentationService.setTemplatesList([]);
         }
       })
     );
-    
-    this.userService.setIsUserHasAccountSetup(true);
-    this.gettingDocumentationHistoryFromApi();
   }
   // ngOnDestroy
   ngOnDestroy() {
@@ -275,12 +338,31 @@ export class DocumentationComponent implements OnInit, OnDestroy {
   }
 
   selectProduct(product: string) {
-    this.documentationService.setSelectedProduct(product);
-    // Also set the selected product in onboarding service to ensure product ID is set
+    console.log("========== PRODUCT SELECTED IN DROPDOWN ==========");
+    console.log("Product selected:", product);
+    
+    // Set in onboarding service first to ensure product ID is set
+    // This will also trigger the onboarding service subscription which will fetch templates
     this.onboardingService.setSelectedProduct(product);
+    
+    // Verify the product ID was set correctly
+    const verifyProductId = this.onboardingService.getSelectedProductId();
+    console.log("Product ID after setting:", verifyProductId);
+    
+    if (!verifyProductId) {
+      console.error("CRITICAL: Product ID is empty after setting product!");
+      console.error("Full product list:", this.onboardingService.getFullProductList());
+      console.error("Attempting to match product:", product);
+    }
+    
+    // Set in documentation service for consistency (but don't fetch templates from here)
+    this.documentationService.setSelectedProduct(product);
+    
+    // Close dropdowns
     this.isProductDropdownOpen = false;
     this.isGenProductDropdownOpen = false;
     this.isProductDropdownBotOpen = false;
+    console.log("==================================================");
   }
   addSource() {
     if (this.newSource.trim()) {
@@ -880,10 +962,16 @@ export class DocumentationComponent implements OnInit, OnDestroy {
   gettingProductListFromApi() {
     this.apiService.get<any>('list_products').subscribe({
       next: async (data) => {
+        console.log('Products loaded from API:', data);
         this.products = data.map((product: any) => product.name);
+        console.log('Product names:', this.products);
+        console.log('Product IDs:', data.map((product: any) => ({ name: product.name, id: product.id })));
         // Also set the full product list with IDs so that getSelectedProductId() works
         this.onboardingService.setFullProductList(data);
       },
+      error: (err) => {
+        console.error('Error loading products from API:', err);
+      }
     });
   }
   // getting documentation history from api

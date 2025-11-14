@@ -28,14 +28,32 @@ export class OnboardingService {
   constructor() { }
 
   setSelectedProduct(selectedProduct: string) {
+    console.log('OnboardingService: Setting product:', selectedProduct);
+    console.log('OnboardingService: Full product list:', this.fullProductList);
     this.selectedProduct = selectedProduct;
     this.selectedProductSubject.next(selectedProduct);
     // Find and set the corresponding product ID
-    const product = this.fullProductList.find(p => p.name === selectedProduct);
+    // Try exact match first
+    let product = this.fullProductList.find(p => p.name === selectedProduct);
+    
+    // If not found, try case-insensitive and trimmed match
+    if (!product) {
+      const trimmedSelected = selectedProduct.trim().toLowerCase();
+      product = this.fullProductList.find(p => p.name?.trim().toLowerCase() === trimmedSelected);
+      if (product) {
+        console.log('OnboardingService: Product found with case-insensitive match');
+      }
+    }
+    
     if (product) {
-      this.selectedProductId = product.id;
+      // Handle both 'id' and '_id' field names
+      this.selectedProductId = product.id || product._id || '';
+      console.log('OnboardingService: Product found:', product);
+      console.log('OnboardingService: Product ID set to:', this.selectedProductId, 'for product:', selectedProduct);
     } else {
-      console.warn('OnboardingService: Product not found in fullProductList:', selectedProduct, 'Available products:', this.fullProductList.map(p => p.name));
+      console.error('OnboardingService: Product not found in fullProductList:', selectedProduct);
+      console.error('Available products:', this.fullProductList.map(p => ({ name: p.name, id: p.id || p._id })));
+      console.error('Product names only:', this.fullProductList.map(p => p.name));
     }
   }
 

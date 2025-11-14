@@ -148,6 +148,8 @@ export class DocumentationService {
   }
 
   setSelectedProduct(product: string) {
+    console.log("DocumentationService.setSelectedProduct called with:", product);
+    console.trace("Stack trace for setSelectedProduct");
     this.selectedProductSubject.next(product);
   }
 
