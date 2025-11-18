@@ -2,9 +2,9 @@
     <table class="w-full table-fixed">
         <thead>
             <tr class="border-b-1 border-[#E9EAEB]">
-                <th class="py-3 px-4 ps-[24px] text-left font-medium whitespace-nowrap relative" style="width: 19%;" #documentationNameDropdown>
+                <th class="py-3 px-4 ps-[24px] text-left font-medium whitespace-nowrap relative" style="width: 20%;" #documentationNameDropdown>
                     <div class="flex items-center gap-[4px]">
-                        Documentation Name
+                        Documentation
                         <button (click)="toggleFilter('documentationName')" 
                                 class="w-[16px] h-[16px] bg-[url('assets/icons/filter-icon.svg')] hover:opacity-70 transition-opacity cursor-pointer"
                                 [class.opacity-100]="isDocumentationNameFilterOpen"
@@ -62,7 +62,7 @@
                         </div>
                     </div>
                 </th>
-                <th class="py-3 px-4 text-left font-medium whitespace-nowrap relative" style="width: 15%;" #templateTypeDropdown>
+                <th class="py-3 px-4 text-left font-medium whitespace-nowrap relative" style="width: 18%;" #templateTypeDropdown>
                     <div class="flex items-center gap-[4px]">
                         Template Type
                         <button (click)="toggleFilter('templateType')" class="w-[16px] h-[16px] bg-[url('assets/icons/filter-icon.svg')] hover:opacity-70 transition-opacity">
@@ -89,7 +89,7 @@
                         </div>
                     </div>
                 </th>
-                <th class="py-3 px-4 text-left font-medium whitespace-nowrap relative" style="width: 15%;" #publishedDateDropdown>
+                <th class="py-3 px-4 text-left font-medium whitespace-nowrap relative" style="width: 18%;" #publishedDateDropdown>
                     <div class="flex items-center gap-[4px]">
                         Published date
                         <button (click)="toggleFilter('publishedDate')" 
@@ -134,7 +134,7 @@
                         </div>
                     </div>
                 </th>
-                <th class="py-3 px-4 text-left font-medium whitespace-nowrap relative" style="width: 12%;" #createdByDropdown>
+                <th class="py-3 px-4 text-left font-medium whitespace-nowrap relative" style="width: 15%;" #createdByDropdown>
                     <div class="flex items-center gap-[4px]">
                         Created by
                         <button (click)="toggleFilter('createdBy')" class="w-[16px] h-[16px] bg-[url('assets/icons/filter-icon.svg')] hover:opacity-70 transition-opacity cursor-pointer">
@@ -161,7 +161,7 @@
                         </div>
                     </div>
                 </th>
-                <th class="py-3 px-4 text-left font-medium whitespace-nowrap" style="width: 18%;"></th>
+                <th class="py-3 px-4 text-left font-medium whitespace-nowrap" style="width: 20%;"></th>
             </tr>
         </thead>
         <tbody>
@@ -178,8 +178,22 @@
                         {{ item.pdf_filename }}
                     </div>
                 </td>
-                <td class="py-3 px-4 whitespace-nowrap" [innerHTML]="item.product_type | highlight: searchTerm"></td>
-                <td class="py-3 px-4 whitespace-nowrap" [innerHTML]="item.template_type | highlight: searchTerm"></td>
+                <td class="py-3 px-4 min-w-0 relative tooltip-btn">
+                    <span class="truncate block w-full" [innerHTML]="item.product_type | highlight: searchTerm"></span>
+                    <!-- Tooltip for product type -->
+                    <div class="absolute left-[16px] top-[calc(100%-20px)] z-50 bg-white border border-[#D5D7DA] rounded-lg text-primary-text-color
+                    text-xs whitespace-pre-wrap p-2 shadow-lg transition-all tooltip-text break-words">
+                        {{ item.product_type }}
+                    </div>
+                </td>
+                <td class="py-3 px-4 min-w-0 relative tooltip-btn">
+                    <span class="truncate block w-full" [innerHTML]="item.template_type | highlight: searchTerm"></span>
+                    <!-- Tooltip for template type -->
+                    <div class="absolute left-[16px] top-[calc(100%-20px)] z-50 bg-white border border-[#D5D7DA] rounded-lg text-primary-text-color
+                    text-xs whitespace-pre-wrap p-2 shadow-lg transition-all tooltip-text break-words">
+                        {{ item.template_type }}
+                    </div>
+                </td>
                 <td class="py-3 px-4 whitespace-nowrap" [innerHTML]="(item.release_date | date:'MM/dd/yyyy') | highlight: searchTerm"></td>
                 <td class="py-3 px-4">
                     <div class="flex justify-start items-center gap-[10px]">
