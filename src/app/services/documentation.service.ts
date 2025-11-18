@@ -184,6 +184,16 @@ export class DocumentationService {
     this.pdfSourcesSubject.next(updatedPdfSources);
   }
 
+  // Clear all sources (URLs)
+  clearSources() {
+    this.sourcesSubject.next([]);
+  }
+
+  // Clear all PDF sources
+  clearPdfSources() {
+    this.pdfSourcesSubject.next([]);
+  }
+
   // Clear all form data
   clearFormData() {
     this.sourcesSubject.next([]);

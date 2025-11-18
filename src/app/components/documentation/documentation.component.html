@@ -221,16 +221,21 @@
                             <button class="material-icons text-[#919399] ml-[0px]" (click)="deleteSource(i)">delete</button>
                         </li>
                     </ul>
-                    <div class="flex w-[100%] bg-[#FAFAFA] border border-[#DFDFDF] rounded-lg py-[10px] px-[16px] gap-[8px]">
+                    <div class="flex w-[100%] bg-[#FAFAFA] border border-[#DFDFDF] rounded-lg py-[10px] px-[16px] gap-[8px]" 
+                         [ngClass]="{'opacity-50 cursor-not-allowed': PdfSources.length > 0}">
                         <span class="w-[13px] h-[20px] bg-[url('./app/resources/icons/paste-url-icon.svg')]">
                         </span>
                         <input type="text" 
                             placeholder="Paste your URL here" 
-                            class="text-sm whitespace-nowrap overflow-hidden text-ellipsis w-[25ch]"  
+                            class="text-sm whitespace-nowrap overflow-hidden text-ellipsis w-[25ch] flex-1 bg-transparent outline-none"  
                             [(ngModel)]="newSource" 
                             (keydown.enter)="addSource()"
+                            [disabled]="PdfSources.length > 0"
                         />
                     </div>
+                    <p class="text-xs text-[#919399] w-90" 
+                       *ngIf="PdfSources.length > 0"
+                       title="URL input is disabled when files are uploaded. Remove files to add URLs.">URL input is disabled when files are uploaded. Remove files to add URLs.</p>
                 </div>
                 <!-- Drag and Drop or Browse -->
                 <div class="w-[100%] flex flex-col gap-2">
@@ -246,16 +251,20 @@
                     </ul>
                     <div class="flex flex-col gap-[16px] w-[100%]">
                         <div class="flex flex-col items-center justify-center w-[100%] bg-[#FAFAFA] border border-[#DFDFDF] rounded-lg py-[16px] px-[24px] gap-[4px]"
-                            (dragover)="onDragOver($event)" 
-                            (drop)="onDrop($event)">
+                            [ngClass]="{'opacity-50 cursor-not-allowed': sources.length > 0}"
+                            (dragover)="sources.length > 0 ? null : onDragOver($event)" 
+                            (drop)="sources.length > 0 ? null : onDrop($event)">
                             <span class="material-icons rotate-270 text-[#919399] my-[4px]">logout</span>
-                            <input type="file" #fileInput class="hidden" (change)="onFileSelected($event)" multiple>
-                            <p class="text-[#474567] text-sm">Drag and drop or 
-                                <span class="text-primary cursor-pointer" (click)="fileInput.click()">Browse</span>
+                            <input type="file" #fileInput class="hidden" (change)="onFileSelected($event)" multiple [disabled]="sources.length > 0">
+                            <p class="text-[#474567] text-sm" [ngClass]="{'text-[#919399]': sources.length > 0}">Drag and drop or 
+                                <span class="text-primary cursor-pointer" 
+                                      [ngClass]="{'cursor-not-allowed opacity-50': sources.length > 0}"
+                                      (click)="sources.length > 0 ? null : fileInput.click()">Browse</span>
                             </p>
                             <p class="text-[#919399] text-xs">PDF, DOC or DOCX (max. 50 MB)</p>
                         </div>
                     </div>
+                    <p class="text-xs text-[#919399] w-90" *ngIf="sources.length > 0">File upload is disabled when URLs are added. Remove URLs to upload files.</p>
                 </div>
                 <button class="active-button text-sm text-white bg-primary flex items-center gap-[8px] px-[14px] rounded-lg border border-[#D5D7DA] h-[41.5px]" 
                         [ngClass]="(!generateDoc || isGeneratingDocumentation)? 'disabled' : ''" 
@@ -511,16 +520,21 @@
                         <button class="material-icons text-[#919399] ml-[0px]" (click)="deleteSource(i)">delete</button>
                     </li>
                 </ul>
-                <div class="flex w-[100%] bg-[#FAFAFA] border border-[#DFDFDF] rounded-lg py-[10px] px-[16px] gap-[8px]">
+                <div class="flex w-[100%] bg-[#FAFAFA] border border-[#DFDFDF] rounded-lg py-[10px] px-[16px] gap-[8px]"
+                     [ngClass]="{'opacity-50 cursor-not-allowed': PdfSources.length > 0}">
                     <span class="w-[13px] h-[20px] bg-[url('./app/resources/icons/paste-url-icon.svg')]">
                     </span>
                     <input 
                         type="text" 
                         placeholder="Paste your URL here" 
-                        class="text-sm"  
+                        class="text-sm flex-1 bg-transparent outline-none"  
                         [(ngModel)]="newSource" 
-                        (keydown.enter)="addSource()">
+                        (keydown.enter)="addSource()"
+                        [disabled]="PdfSources.length > 0">
                 </div>
+                <p class="text-xs text-[#919399] w-90" 
+                   *ngIf="PdfSources.length > 0"
+                   title="URL input is disabled when files are uploaded. Remove files to add URLs.">URL input is disabled when files are uploaded. Remove files to add URLs.</p>
             </div>
         
             <!-- Drag and Drop or Browse -->
@@ -536,15 +550,19 @@
                     </li>
                 </ul>
                 <div class="flex flex-col items-center justify-center w-[100%] bg-[#FAFAFA] border border-[#DFDFDF] rounded-lg py-[16px] px-[24px] gap-[4px]"
-                    (dragover)="onDragOver($event)" 
-                    (drop)="onDrop($event)">
+                    [ngClass]="{'opacity-50 cursor-not-allowed': sources.length > 0}"
+                    (dragover)="sources.length > 0 ? null : onDragOver($event)" 
+                    (drop)="sources.length > 0 ? null : onDrop($event)">
                     <span class="material-icons rotate-270 text-[#919399] my-[4px]">logout</span>
-                    <input type="file" #fileInput class="hidden" (change)="onFileSelected($event)" multiple>
-                    <p class="text-[#474567] text-sm">Drag and drop or 
-                        <span class="text-primary cursor-pointer" (click)="fileInput.click()">Browse</span>
+                    <input type="file" #fileInput class="hidden" (change)="onFileSelected($event)" multiple [disabled]="sources.length > 0">
+                    <p class="text-[#474567] text-sm" [ngClass]="{'text-[#919399]': sources.length > 0}">Drag and drop or 
+                        <span class="text-primary cursor-pointer" 
+                              [ngClass]="{'cursor-not-allowed opacity-50': sources.length > 0}"
+                              (click)="sources.length > 0 ? null : fileInput.click()">Browse</span>
                     </p>
                     <p class="text-[#919399] text-xs">PDF, DOC or DOCX (max. 50 MB)</p>
                 </div>
+                <p class="text-xs text-[#919399]" *ngIf="sources.length > 0">File upload is disabled when URLs are added. Remove URLs to upload files.</p>
                 <div class="flex gap-[12px]  mt-[10px] w-[100%] text-base font-bold">
                     <button class="bg-white flex justify-center items-center py-[8px] px-[24px]  border border-[#D5D7DA] rounded-[8px] w-[50%]" (click)="closeModal()">
                         Close 
