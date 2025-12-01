@@ -483,9 +483,7 @@
                         </div>
                     </div>
                     <!-- Generated content -->
-                    <div *ngIf="!isGeneratingDocumentation && generatedContent" class="generated-content">
-                        <markdown [data]="generatedContent"></markdown>
-                    </div>
+                    <div *ngIf="!isGeneratingDocumentation && generatedContent" class="generated-content" [innerHTML]="generatedContentHTML"></div>
                     <!-- Empty state when no content and not loading -->
                     <div *ngIf="!isGeneratingDocumentation && !generatedContent" class="flex flex-col items-center justify-center h-64 gap-4 text-gray-500">
                         <img src="assets/icons/docu-bot-icon.svg" alt="docu-bot-icon" class="w-[110.2px] h-[74.14px] scale-[0.6]">
@@ -617,9 +615,7 @@
                 <div class="flex flex-col gap-[8px]" *ngIf="selectedDocumentationForPublish">
                     <label class="text-sm font-medium text-[#344054]">Generated Content Preview</label>
                     <div class="w-full bg-white border border-[#D5D7DA] rounded-[8px] shadow-[0px_1px_2px_rgba(10,13,18,0.05)] px-[16px] py-[12px] max-h-[200px] overflow-y-auto generated-content-preview">
-                        <div class="text-sm text-[#344054] generated-content">
-                            <markdown [data]="selectedDocumentationForPublish?.generated_content || generatedContent || releaseNotes || 'No content available'"></markdown>
-                        </div>
+                        <div class="text-sm text-[#344054] generated-content" [innerHTML]="selectedDocumentationHTML"></div>
                     </div>
                 </div>
             </div>

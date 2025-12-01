@@ -1037,6 +1037,23 @@ export class DocumentationComponent implements OnInit, OnDestroy {
     }
   }
 
+  // Getter for HTML version of generated content
+  get generatedContentHTML(): string {
+    if (!this.generatedContent) {
+      return '';
+    }
+    return this.convertMarkdownToHTML(this.generatedContent);
+  }
+
+  // Getter for HTML version of selected documentation content
+  get selectedDocumentationHTML(): string {
+    const content = this.selectedDocumentationForPublish?.generated_content || this.generatedContent || this.releaseNotes || '';
+    if (!content) {
+      return 'No content available';
+    }
+    return this.convertMarkdownToHTML(content);
+  }
+
   // Convert markdown to HTML for publishing
   private convertMarkdownToHTML(markdown: string): string {
     if (!markdown || typeof markdown !== 'string') {
@@ -1044,6 +1061,11 @@ export class DocumentationComponent implements OnInit, OnDestroy {
     }
 
     let html = markdown;
+
+    // Remove markdown code block markers (```markdown, ```, etc.)
+    html = html.replace(/^```markdown\s*/gim, '');
+    html = html.replace(/^```\s*/gim, '');
+    html = html.replace(/\s*```$/gim, '');
 
     // Clean up excessive newlines first (reduce multiple newlines to double newlines)
     html = html.replace(/\n{3,}/g, '\n\n');
