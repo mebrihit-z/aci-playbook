@@ -15,6 +15,7 @@ export class ReleaseHistoryTableComponent implements OnChanges {
   @Input() listPerPage!: number;
   @Input() searchTerm: string = ''; // Input property to receive search term from parent
   @Output() publishRequested = new EventEmitter<any>(); // Event emitter for publish action
+  @Output() deleteRequested = new EventEmitter<any>(); // Event emitter for delete action
   
   currentPage = 1;
   
@@ -436,6 +437,11 @@ export class ReleaseHistoryTableComponent implements OnChanges {
       link.click();
       document.body.removeChild(link);
     }
+  }
+
+  // Handle delete click event
+  onDeleteClick(item: any): void {
+    this.deleteRequested.emit(item);
   }
 
   // Check if URL is cross-origin
