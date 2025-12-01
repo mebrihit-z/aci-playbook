@@ -1063,9 +1063,9 @@ export class DocumentationComponent implements OnInit, OnDestroy {
     let html = markdown;
 
     // Remove markdown code block markers (```markdown, ```, etc.)
-    html = html.replace(/^```markdown\s*/gim, '');
-    html = html.replace(/^```\s*/gim, '');
-    html = html.replace(/\s*```$/gim, '');
+    html = html.replace(/```markdown\s*/gim, '');
+    html = html.replace(/```\s*/gim, '');
+    html = html.replace(/\s*```/gim, '');
 
     // Clean up excessive newlines first (reduce multiple newlines to double newlines)
     html = html.replace(/\n{3,}/g, '\n\n');

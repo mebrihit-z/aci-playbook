@@ -10,12 +10,10 @@ import { TooltipService } from '../../services/tooltip.service';
 import { DocumentationService } from '../../services/documentation.service';
 import { Router } from '@angular/router';
 import { BehaviorSubject } from 'rxjs';
-import { MarkdownModule } from 'ngx-markdown';
-
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, FormsModule, SummaryCardComponent, ReleaseHistoryTableComponent, MarkdownModule],
+  imports: [CommonModule, FormsModule, SummaryCardComponent, ReleaseHistoryTableComponent],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.css'
 })
@@ -307,6 +305,15 @@ export class DashboardComponent {
     this.publishUrl = '';
     this.selectedDocumentationForPublish = null;
   }
+
+  // Getter for HTML version of selected documentation content
+  get selectedDocumentationHTML(): string {
+    const content = this.selectedDocumentationForPublish?.generated_content || '';
+    if (!content) {
+      return 'No content available';
+    }
+    return this.convertMarkdownToHTML(content);
+  }
   
   // Show custom alert modal
   showAlert(title: string, message: string, type: 'success' | 'error' | 'warning' | 'info' = 'info', buttonText: string = 'OK', callback: (() => void) | null = null, secondaryButtonText: string = '') {
@@ -407,6 +414,11 @@ export class DashboardComponent {
     }
 
     let html = markdown;
+
+    // Remove markdown code block markers (```markdown, ```, etc.)
+    html = html.replace(/```markdown\s*/gim, '');
+    html = html.replace(/```\s*/gim, '');
+    html = html.replace(/\s*```/gim, '');
 
     // Clean up excessive newlines first (reduce multiple newlines to double newlines)
     html = html.replace(/\n{3,}/g, '\n\n');
