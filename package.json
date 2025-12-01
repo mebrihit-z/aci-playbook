@@ -26,7 +26,7 @@
     "d3": "^7.9.0",
     "jspdf": "^3.0.3",
     "keycloak-angular": "^20.0.0",
-    "keycloak-js": "^26.2.0",
+    "keycloak-js": "^26.2.1",
     "marked": "^15.0.11",
     "ngx-markdown": "^20.1.0",
     "postcss": "^8.5.3",
