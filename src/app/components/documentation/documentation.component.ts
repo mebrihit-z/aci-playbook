@@ -476,7 +476,7 @@ export class DocumentationComponent implements OnInit, OnDestroy {
       content = this.selectedDocumentationForPublish.generated_content;
     } else {
       // Otherwise use the current generated content
-      content = this.generatedContent || this.releaseNotes;
+      content = this.generatedContentHTML || this.releaseNotes;
     }
     
     if (!content || content.trim() === '') {
