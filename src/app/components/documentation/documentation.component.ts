@@ -64,6 +64,10 @@ export class DocumentationComponent implements OnInit, OnDestroy {
   isPublishingDocumentation: boolean = false;
   releaseNotes: string = '';
   generatedFileName: string = '';
+  //download pdf url
+  pdfUrl: string = '';
+  pdfUrlError: string = '';
+  isPdfUrlValid: boolean = false;
   
   // Publish modal form data
   publishTitle: string = '';
@@ -637,6 +641,11 @@ export class DocumentationComponent implements OnInit, OnDestroy {
   generateDocumentation(files: File[], sources: { newSource: string }[]) {
     this.isGeneratingDocumentation = true;
     this.documentationService.setGeneratedContent('');
+    
+    // Reset PDF URL state when starting new generation
+    this.pdfUrl = '';
+    this.isPdfUrlValid = false;
+    this.pdfUrlError = '';
   
     const today = new Date();
     const releaseDate = today.toLocaleDateString('en-US', {
@@ -660,7 +669,42 @@ export class DocumentationComponent implements OnInit, OnDestroy {
   
     this.apiService.generateDocumentation(formData).subscribe({
       next: (data: any) => {
+        console.log("data in generateDocumentation", data);
         this.documentationService.setGeneratedContent(data.generated_content);
+        
+        // Validate and set PDF URL with error handling
+        if (data.pdf_url) {
+          const urlValidation = this.validatePdfUrl(data.pdf_url);
+          if (urlValidation.isValid) {
+            this.pdfUrl = data.pdf_url;
+            this.isPdfUrlValid = true;
+            this.pdfUrlError = '';
+            console.log("PDF URL validated successfully:", this.pdfUrl);
+          } else {
+            this.pdfUrl = '';
+            this.isPdfUrlValid = false;
+            this.pdfUrlError = urlValidation.error || 'Invalid PDF URL format';
+            console.error("PDF URL validation failed:", this.pdfUrlError);
+            this.showAlert(
+              'PDF URL Error',
+              'The generated PDF URL is invalid or malformed. Please contact support if this issue persists.',
+              'warning',
+              'OK'
+            );
+          }
+        } else {
+          this.pdfUrl = '';
+          this.isPdfUrlValid = false;
+          this.pdfUrlError = 'PDF URL not provided by the server';
+          console.warn("PDF URL missing from API response");
+          this.showAlert(
+            'PDF URL Missing',
+            'The documentation was generated successfully, but the PDF download link is not available. Please try generating again or contact support.',
+            'warning',
+            'OK'
+          );
+        }
+        
         this.generatedFileName = data.pdf_filename;
         this.releaseNotes = data.generated_content;
         this.isGeneratingDocumentation = false;
@@ -668,128 +712,27 @@ export class DocumentationComponent implements OnInit, OnDestroy {
       error: (err: any) => {
         console.error("API Error Details:", err);
         this.isGeneratingDocumentation = false;
+        this.pdfUrl = '';
+        this.isPdfUrlValid = false;
+        this.pdfUrlError = 'Failed to generate documentation';
+        
+        // Show error alert
+        let errorMessage = 'Failed to generate documentation. ';
+        if (err.error && err.error.message) {
+          errorMessage += err.error.message;
+        } else if (err.status === 0) {
+          errorMessage += 'Network error. Please check your connection.';
+        } else if (err.status >= 500) {
+          errorMessage += 'Server error. Please try again later.';
+        } else {
+          errorMessage += 'Please try again.';
+        }
+        
+        this.showAlert('Generation Failed', errorMessage, 'error', 'OK');
       },
     });
   }
-  // export as text
-  exportAsText() {
-    try {
-      // Check if we have content to export
-      if (!this.releaseNotes || this.releaseNotes.trim() === '') {
-        console.warn('No content to export');
-        this.showAlert('No Content', 'No content available to export. Please generate documentation first.', 'warning', 'Understood');
-        return;
-      }
-
-      const doc = new jsPDF();
-      const pageWidth = 190; // Page width in mm
-      const pageHeight = 280; // Page height in mm
-      const margin = 20; // Standard margin
-      let yPosition = margin;
-      
-      // Parse and format the markdown content
-      const formattedContent = this.parseMarkdownForPDF(this.releaseNotes);
-      
-      // Add content with proper formatting - matching published document style
-      for (const element of formattedContent) {
-        // Skip spacing elements
-        if (element.type === 'spacing') {
-          yPosition += element.height;
-          continue;
-        }
-        
-        // Check if we need a new page
-        if (yPosition + element.height > pageHeight - margin) {
-          doc.addPage();
-          yPosition = margin;
-        }
-        
-        // Set font based on element type - matching the published document style
-        if (element.type === 'h1') {
-          doc.setFontSize(20); // Larger for main title - matches Confluence H1
-          doc.setFont('helvetica', 'bold');
-          doc.setTextColor(0, 0, 0);
-        } else if (element.type === 'h2') {
-          doc.setFontSize(16); // Section headings - matches Confluence H2
-          doc.setFont('helvetica', 'bold');
-          doc.setTextColor(0, 0, 0);
-        } else if (element.type === 'h3') {
-          doc.setFontSize(14); // Sub-section headings - matches Confluence H3
-          doc.setFont('helvetica', 'bold');
-          doc.setTextColor(0, 0, 0);
-        } else if (element.type === 'h4') {
-          doc.setFontSize(12); // Smaller headings - matches Confluence H4
-          doc.setFont('helvetica', 'bold');
-          doc.setTextColor(0, 0, 0);
-        } else if (element.type === 'numbered_list') {
-          doc.setFontSize(11); // Standard body text for lists
-          doc.setFont('helvetica', 'normal');
-          doc.setTextColor(0, 0, 0);
-        } else if (element.type === 'bullet_list') {
-          doc.setFontSize(11); // Standard body text for lists
-          doc.setFont('helvetica', 'normal');
-          doc.setTextColor(0, 0, 0);
-        } else if (element.type === 'bold') {
-          doc.setFontSize(11); // Standard body text, bold
-          doc.setFont('helvetica', 'bold');
-          doc.setTextColor(0, 0, 0);
-        } else {
-          doc.setFontSize(11); // Standard body text
-          doc.setFont('helvetica', 'normal');
-          doc.setTextColor(0, 0, 0);
-        }
-        
-        // Add the text with proper spacing and indentation
-        if (element.lines && element.lines.length > 0) {
-          for (const line of element.lines) {
-            if (line && line.trim()) {
-              let xPosition = margin;
-              if (element.type === 'bullet_list') {
-                xPosition = margin + 5; // Indent bullet points
-              } else if (element.type === 'numbered_list') {
-                xPosition = margin + 5; // Indent numbered items
-              }
-              doc.text(line, xPosition, yPosition);
-              yPosition += 6; // Consistent line spacing - matches typical document spacing
-            }
-          }
-        } else if (element.text && element.text.trim()) {
-          let xPosition = margin;
-          if (element.type === 'bullet_list') {
-            xPosition = margin + 5;
-          } else if (element.type === 'numbered_list') {
-            xPosition = margin + 5;
-          }
-          doc.text(element.text, xPosition, yPosition);
-          yPosition += 6;
-        }
-        
-        // Add proper spacing after different element types - matching published format
-        if (element.type === 'h1') {
-          yPosition += 8; // Space after main title
-        } else if (element.type === 'h2') {
-          yPosition += 6; // Space after major sections
-        } else if (element.type === 'h3' || element.type === 'h4') {
-          yPosition += 4; // Space after sub-sections
-        } else if (element.type === 'numbered_list' || element.type === 'bullet_list') {
-          yPosition += 2; // Small space after list items
-        } else if (element.type === 'text' || element.type === 'bold') {
-          yPosition += 3; // Space after paragraphs
-        }
-      }
-      
-      // Save the document
-      const fileName = this.generatedFileName ? 
-        this.generatedFileName.replace('.pdf', '') + '.pdf' : 
-        'release-notes.pdf';
-      doc.save(fileName);
-      
-    } catch (error) {
-      console.error('Error during PDF export:', error);
-      this.showAlert('Export Failed', 'Error exporting PDF. Please try again.', 'error', 'OK');
-    }
-  }
-
+ 
   // Parse markdown content for PDF formatting
   private parseMarkdownForPDF(content: string): any[] {
     if (!content || typeof content !== 'string') {
@@ -1118,6 +1061,72 @@ export class DocumentationComponent implements OnInit, OnDestroy {
     html = html.replace(/<p><\/p>/g, '');
 
     return html;
+  }
+
+  // Validate PDF URL format and accessibility
+  private validatePdfUrl(url: string): { isValid: boolean; error?: string } {
+    if (!url || typeof url !== 'string' || url.trim() === '') {
+      return { isValid: false, error: 'PDF URL is empty or invalid' };
+    }
+
+    // Basic URL format validation
+    try {
+      const urlObj = new URL(url);
+      
+      // Check if it's a valid HTTP/HTTPS URL
+      if (!['http:', 'https:'].includes(urlObj.protocol)) {
+        return { isValid: false, error: 'PDF URL must use HTTP or HTTPS protocol' };
+      }
+      
+      // Check if URL has a valid hostname
+      if (!urlObj.hostname || urlObj.hostname.trim() === '') {
+        return { isValid: false, error: 'PDF URL has an invalid hostname' };
+      }
+      
+      return { isValid: true };
+    } catch (error) {
+      // URL constructor throws error for invalid URLs
+      return { isValid: false, error: 'PDF URL format is invalid' };
+    }
+  }
+
+  // Handle PDF download with error checking
+  handlePdfDownload(event: Event): void {
+    if (!this.isPdfUrlValid || !this.pdfUrl) {
+      event.preventDefault();
+      event.stopPropagation();
+      
+      if (this.pdfUrlError) {
+        this.showAlert(
+          'Download Error',
+          this.pdfUrlError + '. Please try generating the documentation again.',
+          'error',
+          'OK'
+        );
+      } else {
+        this.showAlert(
+          'Download Unavailable',
+          'PDF download link is not available. Please generate the documentation first.',
+          'warning',
+          'OK'
+        );
+      }
+      return;
+    }
+
+    // Optional: Test if the URL is accessible before allowing download
+    // This is a lightweight check - the actual download will still happen
+    const urlValidation = this.validatePdfUrl(this.pdfUrl);
+    if (!urlValidation.isValid) {
+      event.preventDefault();
+      event.stopPropagation();
+      this.showAlert(
+        'Invalid PDF URL',
+        urlValidation.error || 'The PDF URL is invalid. Please contact support.',
+        'error',
+        'OK'
+      );
+    }
   }
 
   // Helper method to wrap list items with ul/ol tags

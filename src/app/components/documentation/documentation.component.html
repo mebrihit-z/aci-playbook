@@ -452,13 +452,22 @@
                     </div>
                 </div>
             </div>
-            <!-- export and publish button section -->
+            <!-- Download and publish button section -->
             <div class="flex flex-col">
                 <div class="flex flex-col lg:flex-row gap-2 h-[100%]">
-                    <button class="my-auto bg-white border border-[#D5D7DA] rounded-[8px] px-[16px] py-[8px] flex items-center gap-[8px] shadow-[0px_1px_2px_rgba(10,13,18,0.05)] text-[#666F8D] text-sm font-medium h-[100%] gradient-border-button" (click)="exportAsText()">
+                    <a 
+                        class="my-auto bg-white border border-[#D5D7DA] rounded-[8px] px-[16px] py-[8px] flex items-center gap-[8px] shadow-[0px_1px_2px_rgba(10,13,18,0.05)] text-sm font-medium h-[100%] gradient-border-button" 
+                        [class.text-[#666F8D]]="isPdfUrlValid && pdfUrl"
+                        [class.text-gray-400]="!isPdfUrlValid || !pdfUrl"
+                        [class.cursor-not-allowed]="!isPdfUrlValid || !pdfUrl"
+                        [class.opacity-50]="!isPdfUrlValid || !pdfUrl"
+                        [href]="isPdfUrlValid && pdfUrl ? pdfUrl : 'javascript:void(0)'"
+                        [attr.aria-disabled]="!isPdfUrlValid || !pdfUrl"
+                        (click)="handlePdfDownload($event)"
+                        [title]="!isPdfUrlValid || !pdfUrl ? (pdfUrlError || 'PDF download is not available') : 'Download PDF'">
                         <img src="assets/icons/download-icon.svg" alt="download-icon" class="w-[21.83px] h-[21.83px] scale-[0.8]">
                         Download 
-                    </button>
+                    </a>
                     <button class="active-button my-auto border border-[#D5D7DA] rounded-[8px] px-[24px] py-[8px] flex items-center gap-[8px] shadow-[0px_1px_2px_rgba(10,13,18,0.05)] text-white text-sm font-medium bg-primary h-[100%]" (click)="openPublishModal()">Publish</button>
                 </div>
             </div>
