@@ -102,9 +102,10 @@ h6 {
   margin-bottom: 0.5rem;
 }
 .generated-content :is(h1, h2, h3, h4, h5, h6) {
+  margin-top: 0.5rem;
   margin-bottom: 0.5rem;
   font-size: unset;
-  font-weight: unset;
+  font-weight: 600;
   color: unset;
 }
 
@@ -122,9 +123,8 @@ h6 {
 }
 .chat-answer :is(h1, h2, h3, h4, h5, h6) {
   margin-bottom: 0.5rem;
-
   font-size: unset;
-  font-weight: unset;
+  font-weight: 600;
   color: unset;
 }
 .follow-up li::marker {

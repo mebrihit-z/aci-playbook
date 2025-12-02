@@ -30,7 +30,8 @@ export class DocumentationComponent implements OnInit, OnDestroy {
   // documentation Pages
   documentationLandingPage = false;
   documentationGeneratingPage = false; 
-  documentationGeneratedPage = false; 
+  documentationGeneratedPage = false;
+  hasVisitedGeneratedPage = false; // Track if user has visited the generated page 
   // products
   products: string[] = [];
   selectedProduct: string = "";
@@ -282,7 +283,7 @@ export class DocumentationComponent implements OnInit, OnDestroy {
     this.subscriptions.forEach(sub => sub.unsubscribe());
   }
   // go to documentation generated page
-  goToDocumentationGeneratedPage() {
+  goToDocumentationGeneratedPage(forceGeneration: boolean = false) {
     this.documentationService.setDocumentationLandingPage(false);
     this.documentationService.setDocumentationGeneratingPage(false);
     this.documentationService.setDocumentationGeneratedPage(true);
@@ -290,12 +291,20 @@ export class DocumentationComponent implements OnInit, OnDestroy {
     this.documentationLandingPage = false;
     this.documentationGeneratingPage = false;
     
-    // Check if either PdfSources or sources arrays have content before proceeding
-    if (this.PdfSources.length > 0 || this.sources.length > 0) {
-      this.generateDocumentation(this.PdfSources, this.sources); 
-    } else {
-      console.warn('Cannot generate documentation: No sources or files available');
+    // If forceGeneration is true (Generate button), always generate new documentation
+    // If forceGeneration is false (Next button), only generate if user hasn't visited before
+    if (forceGeneration || !this.hasVisitedGeneratedPage) {
+      this.hasVisitedGeneratedPage = true; // Mark that user has visited the generated page
+      
+      // Check if either PdfSources or sources arrays have content before proceeding
+      if (this.PdfSources.length > 0 || this.sources.length > 0) {
+        this.generateDocumentation(this.PdfSources, this.sources); 
+      } else {
+        console.warn('Cannot generate documentation: No sources or files available');
+      }
     }
+    // If hasVisitedGeneratedPage is true and forceGeneration is false, just navigate without regenerating
+    // The previously generated content will be preserved and displayed
     
   }
   // go to documentation generating page
@@ -315,6 +324,7 @@ export class DocumentationComponent implements OnInit, OnDestroy {
     this.documentationGeneratedPage = false;
     this.documentationLandingPage = true;
     this.documentationGeneratingPage = false;
+    this.hasVisitedGeneratedPage = false; // Reset flag when going back to landing page
   }
   toggleDropdown() {
     this.isOpen = !this.isOpen;
@@ -378,6 +388,13 @@ export class DocumentationComponent implements OnInit, OnDestroy {
       this.newSource = ''; // Clear input after adding
     }
     this.updateGenerateButtonState();
+  }
+
+  saveAndCloseModal() {
+    // Add any pending source from the input field
+    this.addSource();
+    // Close the modal
+    this.closeModal();
   }
 
   addPdfSource() {
@@ -1165,5 +1182,14 @@ export class DocumentationComponent implements OnInit, OnDestroy {
     }
 
     return result.join('\n');
+  }
+
+  // Check if documentation is ready to be published
+  get isDocumentationReady(): boolean {
+    // Documentation is ready if:
+    // 1. Not currently generating
+    // 2. Has generated content (either generatedContent or releaseNotes)
+    return !this.isGeneratingDocumentation && 
+           (!!this.generatedContent || !!this.releaseNotes);
   }
 }
