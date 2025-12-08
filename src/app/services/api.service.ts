@@ -61,7 +61,9 @@ export class ApiService {
   delete<T>(endpoint: string): Observable<T> {
     return this.http.delete<T>(`${this.baseUrl}/${endpoint}`);
   }
-
+  deleteSingleGeneratedDocument(documentId: string): Observable<any> {
+    return this.http.delete<any>(`${this.documentationUrl}/${documentId}`);
+  }
   // === Token-aware methods ===
 
   /**

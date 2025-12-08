@@ -63,6 +63,8 @@ export class DocumentationComponent implements OnInit, OnDestroy {
   showChatBox = false;
   isGeneratingDocumentation: boolean = false;
   isPublishingDocumentation: boolean = false;
+  isDeletingDocumentation: boolean = false;
+  private refreshTimeout: any = null;
   releaseNotes: string = '';
   generatedFileName: string = '';
   //download pdf url
@@ -88,6 +90,12 @@ export class DocumentationComponent implements OnInit, OnDestroy {
   alertButtonText: string = 'OK';
   alertButtonSecondaryText: string = '';
   alertCallback: (() => void) | null = null;
+  
+  // Delete confirmation modal properties
+  isDeleteConfirmModalOpen: boolean = false;
+  deleteConfirmDocumentName: string = '';
+  deleteConfirmDocumentId: string = '';
+  deleteConfirmCallback: (() => void) | null = null;
 
   // constructor
   constructor(private userService: UserService, private documentationService: DocumentationService, private router: Router, private onboardingService: OnboardingService, private apiService: ApiService ) {}
@@ -281,6 +289,12 @@ export class DocumentationComponent implements OnInit, OnDestroy {
   ngOnDestroy() {
     // Clean up subscriptions to prevent memory leaks
     this.subscriptions.forEach(sub => sub.unsubscribe());
+    
+    // Clear any pending refresh timeout
+    if (this.refreshTimeout) {
+      clearTimeout(this.refreshTimeout);
+      this.refreshTimeout = null;
+    }
   }
   // go to documentation generated page
   goToDocumentationGeneratedPage(forceGeneration: boolean = false) {
@@ -603,6 +617,135 @@ export class DocumentationComponent implements OnInit, OnDestroy {
       this.openPublishModal();
     }
   }
+
+  // Handle delete documentation from history
+  onDeleteDocumentationFromHistory(documentationItem: any) {
+    console.log('Deleting documentation from history:', documentationItem);
+    
+    // Prevent multiple simultaneous deletions
+    if (this.isDeletingDocumentation) {
+      console.warn('Delete operation already in progress, ignoring duplicate request');
+      return;
+    }
+    
+    // Store the document ID and name in local variables before any async operations
+    const documentId = documentationItem?.id;
+    const documentName = documentationItem?.pdf_filename || 'this document';
+    
+    // Check if the document has an ID
+    if (!documentId) {
+      console.error('Document ID is missing:', documentationItem);
+      this.showAlert(
+        'Delete Failed',
+        'Document ID is missing. Cannot delete this document.',
+        'error',
+        'OK'
+      );
+      return;
+    }
+
+    // Check if document still exists in the list (might have been deleted already)
+    const documentExists = this.releaseHistory.some(item => item?.id === documentId);
+    if (!documentExists) {
+      console.warn('Document already removed from list, ID:', documentId);
+      // Refresh the list to ensure consistency
+      this.gettingDocumentationHistoryFromApi();
+      return;
+    }
+
+    // Show custom confirmation modal
+    this.showDeleteConfirmation(documentName, documentId);
+  }
+
+  // Show delete confirmation modal
+  showDeleteConfirmation(documentName: string, documentId: string) {
+    this.deleteConfirmDocumentName = documentName;
+    this.deleteConfirmDocumentId = documentId;
+    this.deleteConfirmCallback = () => this.executeDelete(documentId, documentName);
+    this.isDeleteConfirmModalOpen = true;
+  }
+
+  // Close delete confirmation modal (Cancel button)
+  closeDeleteConfirmModal() {
+    this.isDeleteConfirmModalOpen = false;
+    this.deleteConfirmDocumentName = '';
+    this.deleteConfirmDocumentId = '';
+    this.deleteConfirmCallback = null;
+  }
+
+  // Confirm delete (OK button) - behaves like confirm() returning true
+  confirmDelete() {
+    if (this.deleteConfirmCallback && this.deleteConfirmDocumentId) {
+      this.deleteConfirmCallback();
+    }
+  }
+
+  // Execute the actual delete operation
+  executeDelete(documentId: string, documentName: string) {
+    // Close the delete confirmation modal first
+    this.closeDeleteConfirmModal();
+    
+    // Set deleting flag
+    this.isDeletingDocumentation = true;
+    
+    // Cancel any pending refresh timeout
+    if (this.refreshTimeout) {
+      clearTimeout(this.refreshTimeout);
+      this.refreshTimeout = null;
+    }
+
+    // Call the delete API method
+    const deleteSubscription = this.apiService.deleteSingleGeneratedDocument(documentId).subscribe({
+      next: () => {
+        console.log('Document deleted successfully, ID:', documentId);
+        
+        // Immediately remove the document from the local arrays for instant UI update
+        // Use the stored documentId to ensure we're filtering correctly
+        this.releaseHistory = this.releaseHistory.filter(item => item?.id !== documentId);
+        
+        // Apply search filter using the existing method to ensure consistency
+        this.onSearchChange();
+        
+        // Reset deleting flag
+        this.isDeletingDocumentation = false;
+        
+        // Show success message
+        this.showAlert(
+          'Document Deleted',
+          `"${documentName}" has been deleted successfully.`,
+          'success',
+          'OK'
+        );
+        
+        // Refresh data from API after a short delay to ensure consistency
+        // This ensures the server has processed the deletion
+        this.refreshTimeout = setTimeout(() => {
+          this.gettingDocumentationHistoryFromApi();
+          this.refreshTimeout = null;
+        }, 1000);
+      },
+      error: (error) => {
+        console.error('Error deleting documentation:', error);
+        console.error('Failed to delete document ID:', documentId);
+        
+        // Reset deleting flag on error
+        this.isDeletingDocumentation = false;
+        
+        // Show error message
+        const errorMessage = error?.error?.message || error?.message || 'An unknown error occurred while deleting the document.';
+        this.showAlert(
+          'Delete Failed',
+          errorMessage,
+          'error',
+          'OK'
+        );
+      }
+    });
+    
+    // Store subscription for cleanup if needed
+    this.subscriptions.push(deleteSubscription);
+  }
+
   // create document
   createDocument() {
     // Check if either PdfSources or sources arrays have content before proceeding
@@ -947,16 +1090,36 @@ export class DocumentationComponent implements OnInit, OnDestroy {
   }
   // getting documentation history from api
   gettingDocumentationHistoryFromApi() {
+    // Don't refresh if a deletion is in progress to avoid race conditions
+    if (this.isDeletingDocumentation) {
+      console.log('Skipping API refresh - deletion in progress');
+      return;
+    }
+    
     this.apiService.getDocumentationHistory().subscribe({
       next: async (data: any) => {
+        // Double-check deletion isn't in progress before updating
+        if (this.isDeletingDocumentation) {
+          console.log('Skipping API refresh update - deletion in progress');
+          return;
+        }
+        
         this.releaseHistory = Array.isArray(data) ? data : [];
         console.log("releaseHistory in gettingDocumentationHistoryFromApi", this.releaseHistory);
-        this.filteredReleaseHistory = [...this.releaseHistory];
+        // Apply search filter if search term exists
+        if (this.searchTerm.trim()) {
+          this.onSearchChange();
+        } else {
+          this.filteredReleaseHistory = [...this.releaseHistory];
+        }
       },  
       error: (err) => {
         console.error('Error fetching documentation history:', err);
-        this.releaseHistory = [];
-        this.filteredReleaseHistory = [];
+        // Only update on error if deletion is not in progress
+        if (!this.isDeletingDocumentation) {
+          this.releaseHistory = [];
+          this.filteredReleaseHistory = [];
+        }
       },
     });
   }

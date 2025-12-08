@@ -55,6 +55,13 @@ export class DashboardComponent {
   alertButtonText: string = 'OK';
   alertButtonSecondaryText: string = '';
   alertCallback: (() => void) | null = null;
+  
+  // Delete confirmation modal properties
+  isDeleteConfirmModalOpen: boolean = false;
+  deleteConfirmDocumentName: string = '';
+  deleteConfirmDocumentId: string = '';
+  deleteConfirmCallback: (() => void) | null = null;
+  isDeletingDocumentation: boolean = false;
   // tooltip
   skipTooltipValue = false;
   aciPaymentHubTooltip = false;
@@ -214,15 +221,30 @@ export class DashboardComponent {
   }
   // getting documentation history from api
   gettingDocumentationHistoryFromApi() {
+    // Don't refresh if a deletion is in progress to avoid race conditions
+    if (this.isDeletingDocumentation) {
+      console.log('Skipping API refresh - deletion in progress');
+      return;
+    }
+    
     this.apiService.getDocumentationHistory().subscribe({
       next: async (data: any) => {
+        // Double-check deletion isn't in progress before updating
+        if (this.isDeletingDocumentation) {
+          console.log('Skipping API refresh update - deletion in progress');
+          return;
+        }
+        
         this.releaseHistory = Array.isArray(data) ? data : [];
         this.filteredReleaseHistory = [...this.releaseHistory];
       },  
       error: (err) => {
         console.error('Error fetching documentation history:', err);
-        this.releaseHistory = [];
-        this.filteredReleaseHistory = [];
+        // Only update on error if deletion is not in progress
+        if (!this.isDeletingDocumentation) {
+          this.releaseHistory = [];
+          this.filteredReleaseHistory = [];
+        }
       },
     });
   }
@@ -291,6 +313,126 @@ export class DashboardComponent {
       // Open publish modal
       this.openPublishModal();
     }
+  }
+
+  // Delete functionality
+  onDeleteDocumentationFromHistory(documentationItem: any) {
+    console.log('Deleting documentation from history:', documentationItem);
+    
+    // Prevent multiple simultaneous deletions
+    if (this.isDeletingDocumentation) {
+      console.warn('Delete operation already in progress, ignoring duplicate request');
+      return;
+    }
+    
+    // Store the document ID and name in local variables before any async operations
+    const documentId = documentationItem?.id;
+    const documentName = documentationItem?.pdf_filename || 'this document';
+    
+    // Check if the document has an ID
+    if (!documentId) {
+      this.showAlert(
+        'Delete Failed',
+        'Document ID is missing. Cannot delete this documentation.',
+        'error',
+        'OK'
+      );
+      return;
+    }
+
+    // Check if document still exists in the list (might have been deleted already)
+    const documentExists = this.releaseHistory.some(item => item?.id === documentId);
+    if (!documentExists) {
+      console.warn('Document already removed from list, ID:', documentId);
+      // Refresh the list to ensure consistency
+      this.gettingDocumentationHistoryFromApi();
+      return;
+    }
+
+    // Show custom confirmation modal
+    this.showDeleteConfirmation(documentName, documentId);
+  }
+
+  // Show delete confirmation modal
+  showDeleteConfirmation(documentName: string, documentId: string) {
+    this.deleteConfirmDocumentName = documentName;
+    this.deleteConfirmDocumentId = documentId;
+    this.deleteConfirmCallback = () => this.executeDelete(documentId, documentName);
+    this.isDeleteConfirmModalOpen = true;
+  }
+
+  // Close delete confirmation modal (Cancel button)
+  closeDeleteConfirmModal() {
+    this.isDeleteConfirmModalOpen = false;
+    this.deleteConfirmDocumentName = '';
+    this.deleteConfirmDocumentId = '';
+    this.deleteConfirmCallback = null;
+  }
+
+  // Confirm delete (OK button) - behaves like confirm() returning true
+  confirmDelete() {
+    if (this.deleteConfirmCallback && this.deleteConfirmDocumentId) {
+      this.deleteConfirmCallback();
+    }
+  }
+
+  // Execute the actual delete operation
+  executeDelete(documentId: string, documentName: string) {
+    // Close the delete confirmation modal first
+    this.closeDeleteConfirmModal();
+    
+    // Set deleting flag to prevent multiple simultaneous deletions
+    this.isDeletingDocumentation = true;
+
+    // Call the API to delete the documentation
+    this.apiService.deleteSingleGeneratedDocument(documentId).subscribe({
+      next: (data: any) => {
+        console.log('Document deleted successfully, ID:', documentId);
+        
+        // Remove the deleted item from both arrays
+        this.releaseHistory = this.releaseHistory.filter(item => item.id !== documentId);
+        this.filteredReleaseHistory = this.filteredReleaseHistory.filter(item => item.id !== documentId);
+        
+        // Reset deleting flag
+        this.isDeletingDocumentation = false;
+        
+        // Show success message
+        this.showAlert(
+          'Document Deleted',
+          `"${documentName}" has been deleted successfully.`,
+          'success',
+          'OK'
+        );
+      },
+      error: (error) => {
+        console.error('Error deleting documentation:', error);
+        console.error('Failed to delete document ID:', documentId);
+        
+        // Reset deleting flag on error
+        this.isDeletingDocumentation = false;
+        
+        // Show detailed error message
+        let errorMessage = 'Failed to delete documentation. ';
+        if (error.error && error.error.message) {
+          errorMessage += error.error.message;
+        } else if (error.status === 404) {
+          errorMessage += 'Documentation not found.';
+        } else if (error.status === 403) {
+          errorMessage += 'You do not have permission to delete this documentation.';
+        } else if (error.status >= 500) {
+          errorMessage += 'Server error. Please try again later.';
+        } else {
+          errorMessage += 'Please try again.';
+        }
+        
+        this.showAlert(
+          'Delete Failed',
+          errorMessage,
+          'error',
+          'OK'
+        );
+      }
+    });
   }
   
   // Open publish modal

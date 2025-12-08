@@ -137,7 +137,7 @@
     </div>
     <!-- release history list-->
     <div>
-        <app-release-history-table [data]="filteredReleaseHistory" [listPerPage]="listNumber" [searchTerm]="searchTerm" (publishRequested)="onPublishDocumentationFromHistory($event)" />
+        <app-release-history-table [data]="filteredReleaseHistory" [listPerPage]="listNumber" [searchTerm]="searchTerm" (publishRequested)="onPublishDocumentationFromHistory($event)" (deleteRequested)="onDeleteDocumentationFromHistory($event)" />
     </div>
     <!--/* Start New Chart */-->
     <div class="flex flex-col justify-center items-center gap-[16px] relative">
@@ -317,6 +317,50 @@
                     (click)="publishDocumentation()"
                     [disabled]="isPublishingDocumentation || !publishTitle || !publishUrl">
                     {{ isPublishingDocumentation ? 'Publishing...' : 'Publish' }}
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete confirmation modal section -->
+<div class="" *ngIf="isDeleteConfirmModalOpen">
+    <div class="overlay"></div>
+    <div class="">
+        <div class="flex flex-col bg-white p-[24px] gap-[20px] w-[100%] md:w-[420px] min-h-[220px] rounded-[12px] absolute alert-modal tooltip">
+            <div class="flex flex-col gap-[16px]">
+                <!-- Warning icon and title -->
+                <div class="flex items-center gap-[12px]">
+                    <!-- Warning Icon -->
+                    <div class="flex-shrink-0">
+                        <svg class="w-[48px] h-[48px]" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <circle cx="24" cy="24" r="24" fill="#EF4444" fill-opacity="0.1"/>
+                            <circle cx="24" cy="24" r="18" fill="#EF4444"/>
+                            <path d="M20 20L28 28M28 20L20 28" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </div>
+                    <div class="flex flex-col flex-1">
+                        <h3 class="text-[20px] font-semibold text-[#2c2d2e]">Delete Document</h3>
+                    </div>
+                </div>
+                
+                <!-- Confirmation message -->
+                <p class="text-base text-[#344054] leading-relaxed">
+                    Are you sure you want to delete <strong>"{{ deleteConfirmDocumentName }}"</strong>? This action cannot be undone.
+                </p>
+            </div>
+            
+            <!-- Action buttons -->
+            <div class="flex gap-[12px] mt-[8px] w-[100%]">
+                <button 
+                    class="bg-white flex justify-center items-center py-[10px] px-[24px] border border-[#D5D7DA] rounded-[8px] w-[50%] text-[#344054] text-base font-medium hover:bg-gray-50 transition-colors" 
+                    (click)="closeDeleteConfirmModal()">
+                    Cancel
+                </button>
+                <button 
+                    class="flex justify-center items-center py-[10px] px-[24px] border border-[#D5D7DA] rounded-[8px] bg-[#EF4444] hover:bg-[#DC2626] w-[50%] text-white text-base font-medium transition-colors"
+                    (click)="confirmDelete()">
+                    OK
                 </button>
             </div>
         </div>
