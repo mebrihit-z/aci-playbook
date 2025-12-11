@@ -135,8 +135,8 @@
             <div class="flex flex-col gap-4 justify-center items-center mt-3">
                 <!-- documentation name input section -->
                 <div class="flex flex-col gap-[16px] w-90">
-                    <div class="flex flex-col gap-[8px]">
-                        <label class="text-xs font-medium text-[#344054]">Documentation Name</label>
+                    <div class="flex flex-col">
+                        <label class="text-xs">Documentation Name</label>
                         <input 
                             type="text" 
                             placeholder="Enter documentation name" 
@@ -275,6 +275,18 @@
                         </div>
                     </div>
                     <p class="text-xs text-[#919399] w-90" *ngIf="sources.length > 0">File upload is disabled when URLs are added. Remove URLs to upload files.</p>
+                </div>
+                <!-- additional content section -->
+                <div class="flex flex-col gap-[16px] w-90">
+                    <div class="flex flex-col gap-[8px]">
+                        <label class="text-xs mb-[-8px]">Additional Context</label>
+                        <textarea 
+                            placeholder="Enter any additional context or information to include in the documentation..." 
+                            class="w-full bg-white border border-[#D5D7DA] rounded-[8px] px-[12px] py-[10px] text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent min-h-[100px] resize-y"
+                            [(ngModel)]="additionalContent"
+                        ></textarea>
+                        <p class="text-xs">Optional: Add any additional context or information that should be included when generating the documentation.</p>
+                    </div>
                 </div>
                 <button class="active-button text-sm text-white bg-primary flex items-center gap-[8px] px-[14px] rounded-lg border border-[#D5D7DA] h-[41.5px]" 
                         [ngClass]="(!generateDoc || isGeneratingDocumentation)? 'disabled' : ''" 

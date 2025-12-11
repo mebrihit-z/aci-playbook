@@ -82,6 +82,9 @@ export class DocumentationComponent implements OnInit, OnDestroy {
   // Documentation name for generation
   documentationName: string = '';
   
+  // Additional content for documentation generation
+  additionalContent: string = '';
+  
   // Custom alert modal properties
   isAlertModalOpen: boolean = false;
   alertTitle: string = '';
@@ -823,6 +826,9 @@ export class DocumentationComponent implements OnInit, OnDestroy {
     formData.append("template_type", this.documentationService.selectedTemplateId);
     formData.append("data_sources", JSON.stringify(sourceStrings));
     formData.append("pdf_file_name", this.documentationName || 'Untitled Documentation');
+    if (this.additionalContent && this.additionalContent.trim()) {
+      formData.append("additional_content", this.additionalContent.trim());
+    }
     for (let i = 0; i < files.length; i++) {
       formData.append('files', files[i]);
     }
