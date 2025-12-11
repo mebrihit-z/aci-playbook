@@ -39,6 +39,9 @@ export class DocumentationComponent implements OnInit, OnDestroy {
   // sources
   sources: { newSource: string }[] = [];
   PdfSources: File[] = [];
+  // update sources (separate from initial sources)
+  updateSources: { newSource: string }[] = [];
+  updatePdfSources: File[] = [];
   selectedTemplate: any = 'Select Template';
   generatedContent: any = '';
   releaseHistory: any[] = [];
@@ -454,6 +457,38 @@ export class DocumentationComponent implements OnInit, OnDestroy {
     }
     this.updateGenerateButtonState();
   }
+  
+  // Update section handlers (separate from initial sources)
+  onUpdateFileSelected(event: any) {
+    const files = event.target.files;
+    this.handleUpdateFiles(files);
+  }
+  
+  onUpdateDragOver(event: DragEvent) {
+    event.preventDefault();
+  }
+  
+  onUpdateDrop(event: DragEvent) {
+    event.preventDefault();
+    const files = event.dataTransfer?.files;
+    if (files) {
+      this.handleUpdateFiles(files);
+    }
+  }
+  
+  handleUpdateFiles(files: FileList) {
+    // Clear URL sources if files are being uploaded
+    if (this.updateSources.length > 0) {
+      this.updateSources = [];
+    }
+    for (let i = 0; i < files.length; i++) {
+      this.updatePdfSources.push(files[i]);
+    }
+  }
+  
+  deleteUpdatePdfSource(index: number) {
+    this.updatePdfSources.splice(index, 1);
+  }
   // open modal
   openModal() {
     this.isModalOpen = true;
@@ -757,6 +792,36 @@ export class DocumentationComponent implements OnInit, OnDestroy {
     } else {
       console.warn('Cannot generate documentation: No sources or files available');
     }
+  }
+  
+  // update document
+  updateDocument() {
+    // Check if either updatePdfSources or updateSources arrays have content before proceeding
+    if (this.updatePdfSources.length > 0 || this.updateSources.length > 0) {
+      // Navigate to generated page
+      this.documentationService.setDocumentationLandingPage(false);
+      this.documentationService.setDocumentationGeneratingPage(false);
+      this.documentationService.setDocumentationGeneratedPage(true);
+      this.documentationGeneratedPage = true;
+      this.documentationLandingPage = false;
+      this.documentationGeneratingPage = false;
+      this.hasVisitedGeneratedPage = true;
+      
+      // Generate documentation with update sources
+      this.generateDocumentation(this.updatePdfSources, this.updateSources); 
+    } else {
+      console.warn('Cannot update documentation: No update sources or files available');
+    }
+  }
+  
+  // Check if update section has files
+  get hasUpdateSources(): boolean {
+    return this.updatePdfSources.length > 0 || this.updateSources.length > 0;
+  }
+  
+  // Check if initial section has files
+  get hasInitialSources(): boolean {
+    return this.PdfSources.length > 0 || this.sources.length > 0;
   }
 
   // Update generate button state based on available sources or files

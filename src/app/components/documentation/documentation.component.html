@@ -218,6 +218,18 @@
                         </div>
                     </div>
                 </div>
+                 <!-- additional content section -->
+                 <div class="flex flex-col gap-[16px] w-90">
+                    <div class="flex flex-col gap-[8px]">
+                        <label class="text-xs mb-[-8px]">Additional Context</label>
+                        <textarea 
+                            placeholder="Enter any additional context or information to include in the documentation..." 
+                            class="w-full bg-white border border-[#D5D7DA] rounded-[8px] px-[12px] py-[10px] text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent min-h-[100px] resize-y"
+                            [(ngModel)]="additionalContent"
+                        ></textarea>
+                        <p class="text-xs mt-[-6px]">Optional: Add any additional context or information that should be included when generating the documentation.</p>
+                    </div>
+                </div>
                 <!-- add sources section -->
                 <div class="flex flex-col justify-start gap-[8px]">
                     <p class="text-xs mb-[-10px]">Add Sources</p>
@@ -276,19 +288,40 @@
                     </div>
                     <p class="text-xs text-[#919399] w-90" *ngIf="sources.length > 0">File upload is disabled when URLs are added. Remove URLs to upload files.</p>
                 </div>
-                <!-- additional content section -->
-                <div class="flex flex-col gap-[16px] w-90">
-                    <div class="flex flex-col gap-[8px]">
-                        <label class="text-xs mb-[-8px]">Additional Context</label>
-                        <textarea 
-                            placeholder="Enter any additional context or information to include in the documentation..." 
-                            class="w-full bg-white border border-[#D5D7DA] rounded-[8px] px-[12px] py-[10px] text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent min-h-[100px] resize-y"
-                            [(ngModel)]="additionalContent"
-                        ></textarea>
-                        <p class="text-xs">Optional: Add any additional context or information that should be included when generating the documentation.</p>
+                <!-- Update Document Sources section -->
+                <div class="w-[100%] flex flex-col mt-4">
+                    <div class="flex flex-col">
+                        <p class="text-sm font-medium text-[#344054]">Update Document Sources</p>
+                        <p class="text-xs text-[#919399]">Upload new files to update the document sources</p>
                     </div>
+                    <!-- Update pdf sources list -->
+                    <ul class="flex flex-col gap-[8px] w-[100%]">
+                        <li class="flex w-[100%] bg-[#FAFAFA] border border-[#DFDFDF] rounded-lg py-[10px] px-[16px] gap-[8px] justify-between " *ngFor="let item of updatePdfSources; let i = index">
+                            <div class="flex items-center justify-center gap-[4px]">
+                                <img [src]="getFileIcon(item.name)" style="transform: scale(0.8)" alt="File Icon" />
+                                <span class="text-sm whitespace-nowrap overflow-hidden text-ellipsis w-[25ch] flex-1 text-[#2C2D2E]">{{item.name}}</span>
+                            </div>
+                            <button class="material-icons text-[#919399] ml-[0px]" (click)="deleteUpdatePdfSource(i)">delete</button>
+                        </li>
+                    </ul>
+                    <div class="flex flex-col items-center justify-center w-[100%] bg-[#FAFAFA] border border-[#DFDFDF] rounded-lg py-[16px] px-[24px] gap-[4px]"
+                        [ngClass]="{'opacity-50 cursor-not-allowed': updateSources.length > 0}"
+                        (dragover)="updateSources.length > 0 ? null : onUpdateDragOver($event)" 
+                        (drop)="updateSources.length > 0 ? null : onUpdateDrop($event)">
+                        <span class="material-icons rotate-270 text-[#919399] my-[4px]">logout</span>
+                        <input type="file" #updateFileInput class="hidden" (change)="onUpdateFileSelected($event)" multiple [disabled]="updateSources.length > 0">
+                        <p class="text-[#474567] text-sm" [ngClass]="{'text-[#919399]': updateSources.length > 0}">Drag and drop or 
+                            <span class="text-primary cursor-pointer" 
+                                  [ngClass]="{'cursor-not-allowed opacity-50': updateSources.length > 0}"
+                                  (click)="updateSources.length > 0 ? null : updateFileInput.click()">Browse</span>
+                        </p>
+                        <p class="text-[#919399] text-xs">PDF, DOC or DOCX (max. 50 MB)</p>
+                    </div>
+                    <p class="text-xs text-[#919399] w-90" *ngIf="updateSources.length > 0">File upload is disabled when URLs are added. Remove URLs to upload files.</p>
                 </div>
-                <button class="active-button text-sm text-white bg-primary flex items-center gap-[8px] px-[14px] rounded-lg border border-[#D5D7DA] h-[41.5px]" 
+                <!-- Generate button (shown when initial sources are used) -->
+                <button *ngIf="hasInitialSources && !hasUpdateSources" 
+                        class="active-button text-sm text-white bg-primary flex items-center gap-[8px] px-[14px] rounded-lg border border-[#D5D7DA] h-[41.5px]" 
                         [ngClass]="(!generateDoc || isGeneratingDocumentation)? 'disabled' : ''" 
                         [disabled]="!generateDoc || isGeneratingDocumentation"
                         (click)="goToDocumentationGeneratedPage(true)">
@@ -296,6 +329,20 @@
                     <img src="assets/icons/white-stars.svg" alt="white-stars" class="w-[18.33px] h-[18.33px] scale-[0.8]">
                     <span>{{ isGeneratingDocumentation ? 'Generating...' : 'Generate' }}</span>
                 </button>
+                <!-- Update button (shown when update sources are used) -->
+                <button *ngIf="hasUpdateSources && !hasInitialSources" 
+                        class="active-button text-sm text-white bg-primary flex items-center gap-[8px] px-[14px] rounded-lg border border-[#D5D7DA] h-[41.5px]" 
+                        [ngClass]="(isGeneratingDocumentation)? 'disabled' : ''" 
+                        [disabled]="isGeneratingDocumentation || (!hasUpdateSources)"
+                        (click)="updateDocument()">
+                    <div *ngIf="isGeneratingDocumentation" class="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                    <img src="assets/icons/white-stars.svg" alt="white-stars" class="w-[18.33px] h-[18.33px] scale-[0.8]">
+                    <span>{{ isGeneratingDocumentation ? 'Updating...' : 'Update' }}</span>
+                </button>
+                <!-- Message when both sections have files -->
+                <p *ngIf="hasInitialSources && hasUpdateSources" class="text-xs text-[#919399] w-90 mt-2">
+                    Please use either the initial sources or update sources, not both. Clear one section to proceed.
+                </p>
             </div>
         </div>
     </div>
