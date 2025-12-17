@@ -246,9 +246,9 @@
                 <div class="flex flex-col w-95">
                     <p class="text-xs">Add / Upload Sources Files</p>
                     <div class="w-full bg-white border border-[#D5D7DA] rounded-[8px] p-[16px] w-95">
-                        <div class="flex flex-col justify-start gap-2">
+                        <div class="flex flex-col justify-start gap-2 w-[100%]">
                             <!-- sources list -->
-                            <ul class="flex flex-col gap-[8px] w-90">
+                            <ul class="flex flex-col gap-[8px] w-[100%]">
                                 <li class="flex w-[100%] bg-[#FAFAFA] border border-[#DFDFDF] rounded-lg py-[10px] px-[16px] gap-[8px] justify-between " *ngFor="let item of sources; let i = index">
                                     <div class="flex items-center justify-center gap-[4px]">
                                         <span class="w-[24px] h-[24px] scale-[0.8] bg-[url('./app/resources/icons/green-file-uplode-icon.svg')]"></span>
@@ -257,7 +257,7 @@
                                     <button class="material-icons text-[#919399] ml-[0px]" (click)="deleteSource(i)">delete</button>
                                 </li>
                             </ul>
-                            <div class="flex w-[100%] bg-[#FAFAFA] border border-[#DFDFDF] rounded-lg py-[10px] px-[16px] gap-[8px]">
+                            <div class="flex w-[100%] bg-[#FAFAFA] border border-[#DFDFDF] rounded-lg py-[10px] px-[16px] gap-[8px] w-[100%]">
                                 <span class="w-[13px] h-[20px] bg-[url('./app/resources/icons/paste-url-icon.svg')]">
                                 </span>
                                 <input type="text" 
@@ -302,8 +302,8 @@
                         <p class="text-sm">Base document to be updated</p>
                     </div>
                     <!-- Update pdf sources list -->
-                    <ul class="flex flex-col gap-[8px] w-[100%]">
-                        <li class="flex w-[100%] bg-[#FAFAFA] border border-[#DFDFDF] rounded-lg py-[10px] px-[16px] gap-[8px] justify-between " *ngFor="let item of updatePdfSources; let i = index">
+                    <ul class="flex flex-col w-[100%] w-[100%]">
+                        <li class="mb-[8px] flex w-[100%] bg-[#FAFAFA] border border-[#DFDFDF] rounded-lg py-[10px] px-[16px] gap-[8px] justify-between " *ngFor="let item of updatePdfSources; let i = index">
                             <div class="flex items-center justify-center gap-[4px]">
                                 <img [src]="getFileIcon(item.name)" style="transform: scale(0.8)" alt="File Icon" />
                                 <span class="text-sm whitespace-nowrap overflow-hidden text-ellipsis w-[25ch] flex-1 text-[#2C2D2E]">{{item.name}}</span>
@@ -311,7 +311,7 @@
                             <button class="material-icons text-[#919399] ml-[0px]" (click)="deleteUpdatePdfSource(i)">delete</button>
                         </li>
                     </ul>
-                    <div class="flex flex-col items-center justify-center w-[100%] bg-[#FAFAFA] border border-[#DFDFDF] rounded-lg py-[16px] px-[24px] gap-[4px] mt-[8px]"
+                    <div class="flex flex-col items-center justify-center w-[100%] bg-[#FAFAFA] border border-[#DFDFDF] rounded-lg py-[16px] px-[24px] gap-[4px]"
                         (dragover)="onUpdateDragOver($event)" 
                         (drop)="onUpdateDrop($event)">
                         <span class="material-icons rotate-270 text-[#919399] my-[4px]">logout</span>
