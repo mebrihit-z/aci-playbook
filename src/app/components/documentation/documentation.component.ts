@@ -884,7 +884,7 @@ export class DocumentationComponent implements OnInit, OnDestroy {
     });
   
     const sourceStrings = sources.map(s => s.newSource);
-    console.log("generatedFileName in generateDocumentation", this.documentationName);
+    console.log("generateDocumentation", this.additionalContent,this.showUpdateDocumentSources);
     const formData = new FormData();
     formData.append("created_by", this.userName);
     formData.append("release_date", releaseDate);
@@ -892,16 +892,21 @@ export class DocumentationComponent implements OnInit, OnDestroy {
     formData.append("template_type", this.documentationService.selectedTemplateId);
     formData.append("data_sources", JSON.stringify(sourceStrings));
     formData.append("pdf_file_name", this.documentationName || 'Untitled Documentation');
-    if (this.additionalContent && this.additionalContent.trim()) {
-      formData.append("additional_content", this.additionalContent.trim());
-    }
+    formData.append("context_template", JSON.stringify(this.additionalContent));
+    formData.append("modify_template", this.showUpdateDocumentSources ? 'true' : 'false');
+  
     for (let i = 0; i < files.length; i++) {
       formData.append('files', files[i]);
     }
   
+    // Append base_document files from Update pdf sources list
+    for (let i = 0; i < this.updatePdfSources.length; i++) {
+      formData.append('base_document', this.updatePdfSources[i]);
+    }
+  
     this.apiService.generateDocumentation(formData).subscribe({
       next: (data: any) => {
-        console.log("data in generateDocumentation", data);
+        console.log("data in generateDocumentation base_document files", data);
         this.documentationService.setGeneratedContent(data.generated_content);
         
         // Validate and set PDF URL with error handling
