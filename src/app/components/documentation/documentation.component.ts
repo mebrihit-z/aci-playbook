@@ -477,10 +477,12 @@ export class DocumentationComponent implements OnInit, OnDestroy {
     for (let i = 0; i < files.length; i++) {
       this.updatePdfSources.push(files[i]);
     }
+    // Update button state is automatically checked via the hasUpdateSources getter
   }
   
   deleteUpdatePdfSource(index: number) {
     this.updatePdfSources.splice(index, 1);
+    // Update button state is automatically checked via the hasUpdateSources getter
   }
   // open modal
   openModal() {
@@ -789,8 +791,12 @@ export class DocumentationComponent implements OnInit, OnDestroy {
   
   // update document
   updateDocument() {
-    // Check if either updatePdfSources or updateSources arrays have content before proceeding
-    if (this.updatePdfSources.length > 0 || this.updateSources.length > 0) {
+    // Combine all sources: regular sources/files and update-specific sources/files
+    const allPdfSources = [...this.PdfSources, ...this.updatePdfSources];
+    const allSources = [...this.sources, ...this.updateSources];
+    
+    // Check if either sources or files arrays have content before proceeding
+    if (allPdfSources.length > 0 || allSources.length > 0) {
       // Navigate to generated page
       this.documentationService.setDocumentationLandingPage(false);
       this.documentationService.setDocumentationGeneratingPage(false);
@@ -800,16 +806,18 @@ export class DocumentationComponent implements OnInit, OnDestroy {
       this.documentationGeneratingPage = false;
       this.hasVisitedGeneratedPage = true;
       
-      // Generate documentation with update sources
-      this.generateDocumentation(this.updatePdfSources, this.updateSources); 
+      // Generate documentation with all sources (regular + update-specific)
+      this.generateDocumentation(allPdfSources, allSources); 
     } else {
-      console.warn('Cannot update documentation: No update sources or files available');
+      console.warn('Cannot update documentation: No sources or files available');
     }
   }
   
-  // Check if update section has files
+  // Check if update section has files or sources
   get hasUpdateSources(): boolean {
-    return this.updatePdfSources.length > 0 || this.updateSources.length > 0;
+    // Check if user has added sources (URLs) or uploaded files in the regular sections
+    // OR if they've uploaded base document files in the update section
+    return this.sources.length > 0 || this.PdfSources.length > 0 || this.updatePdfSources.length > 0 || this.updateSources.length > 0;
   }
   
   // Check if initial section has files
