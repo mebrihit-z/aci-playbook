@@ -102,6 +102,9 @@ export class DocumentationComponent implements OnInit, OnDestroy {
   deleteConfirmDocumentName: string = '';
   deleteConfirmDocumentId: string = '';
   deleteConfirmCallback: (() => void) | null = null;
+  
+  // Toggle for Update Document Sources section
+  showUpdateDocumentSources: boolean = false;
 
   // constructor
   constructor(private userService: UserService, private documentationService: DocumentationService, private router: Router, private onboardingService: OnboardingService, private apiService: ApiService ) {}

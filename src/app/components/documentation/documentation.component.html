@@ -133,6 +133,19 @@
             <h4>Meet DocuBot!</h4>
             <h6>Your AI assistant for generating documentation.</h6>
             <div class="flex flex-col gap-4 justify-center items-center mt-3">
+                <!-- Toggle for Update Document Sources -->
+                <div class="flex flex-col gap-[8px] w-90">
+                    <div class="flex items-center justify-between">
+                        <label class="text-xs text-[#344054]">Update a Document Sources</label>
+                        <label class="switch">
+                            <input 
+                                type="checkbox"
+                                [(ngModel)]="showUpdateDocumentSources"
+                            >
+                            <span class="slider round"></span>
+                        </label>
+                    </div>
+                </div>
                 <!-- documentation name input section -->
                 <div class="flex flex-col gap-[16px] w-90">
                     <div class="flex flex-col">
@@ -146,7 +159,7 @@
                     </div>
                 </div>
                 <!-- select product section -->
-                <div class="flex flex-col gap-[16px]" #botProductDropdown>
+                <div class="flex flex-col gap-[16px]" #botProductDropdown *ngIf="!showUpdateDocumentSources">
                     <div class="relative w-90">
                         <p class="text-xs">Select Product</p>
                         <!-- Products Dropdown Button -->
@@ -182,7 +195,7 @@
                     </div>
                 </div>
                 <!-- select template section -->
-                <div class="flex flex-col gap-[16px]">
+                <div class="flex flex-col gap-[16px]" *ngIf="!showUpdateDocumentSources">
                     <div class="relative w-90" #templatesDropdown>
                         <p class="text-xs">Select Template</p>
                         <!-- Templates Dropdown Button -->
@@ -219,7 +232,7 @@
                     </div>
                 </div>
                  <!-- additional content section -->
-                 <div class="flex flex-col gap-[16px] w-90">
+                 <div class="flex flex-col gap-[16px] w-90" *ngIf="!showUpdateDocumentSources">
                     <div class="flex flex-col gap-[8px]">
                         <label class="text-xs mb-[-8px]">Additional Context</label>
                         <textarea 
@@ -263,6 +276,7 @@
                 <div class="w-[100%] flex flex-col gap-2">
                     <!-- pdf sources list -->
                     <ul class="flex flex-col gap-[8px] w-[100%] mt-6">
+                        <p class="text-sm mb-[-10px]">Upload a files</p>
                         <li class="flex w-[100%] bg-[#FAFAFA] border border-[#DFDFDF] rounded-lg py-[10px] px-[16px] gap-[8px] justify-between " *ngFor="let item of PdfSources; let i = index">
                             <div class="flex items-center justify-center gap-[4px]">
                                 <img [src]="getFileIcon(item.name)" style="transform: scale(0.8)" alt="File Icon" />
@@ -289,10 +303,9 @@
                     <p class="text-xs text-[#919399] w-90" *ngIf="sources.length > 0">File upload is disabled when URLs are added. Remove URLs to upload files.</p>
                 </div>
                 <!-- Update Document Sources section -->
-                <div class="w-[100%] flex flex-col mt-4">
+                <div class="w-[100%] flex flex-col mt-4" *ngIf="showUpdateDocumentSources">
                     <div class="flex flex-col">
-                        <p class="text-sm font-medium text-[#344054]">Update Document Sources</p>
-                        <p class="text-xs text-[#919399]">Upload new files to update the document sources</p>
+                        <p class="text-sm">Base document to be updated</p>
                     </div>
                     <!-- Update pdf sources list -->
                     <ul class="flex flex-col gap-[8px] w-[100%]">
