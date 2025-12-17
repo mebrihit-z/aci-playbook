@@ -403,10 +403,7 @@ export class DocumentationComponent implements OnInit, OnDestroy {
   }
   addSource() {
     if (this.newSource.trim()) {
-      // Clear PDF sources if URLs are being added
-      if (this.PdfSources.length > 0) {
-        this.documentationService.clearPdfSources();
-      }
+      // Allow both sources and files to be used together
       this.documentationService.addSource({ newSource: this.newSource });
       this.newSource = ''; // Clear input after adding
     }
@@ -450,11 +447,7 @@ export class DocumentationComponent implements OnInit, OnDestroy {
     }
   }
   handleFiles(files: FileList) {
-    // Clear URL sources if files are being uploaded
-    if (this.sources.length > 0) {
-      this.documentationService.clearSources();
-      this.newSource = ''; // Clear the input field
-    }
+    // Allow both sources and files to be used together
     for (let i = 0; i < files.length; i++) {
       this.documentationService.addPdfSource(files[i]);
     }
@@ -480,10 +473,7 @@ export class DocumentationComponent implements OnInit, OnDestroy {
   }
   
   handleUpdateFiles(files: FileList) {
-    // Clear URL sources if files are being uploaded
-    if (this.updateSources.length > 0) {
-      this.updateSources = [];
-    }
+    // Allow both sources and files to be used together
     for (let i = 0; i < files.length; i++) {
       this.updatePdfSources.push(files[i]);
     }
