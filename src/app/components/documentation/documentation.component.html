@@ -134,7 +134,7 @@
             <h6>Your AI assistant for generating documentation.</h6>
             <div class="flex flex-col gap-4 justify-center items-center mt-3">
                 <!-- Toggle for Update Document Sources -->
-                <div class="flex flex-col gap-[8px] w-90">
+                <div class="flex flex-col gap-[8px] w-95">
                     <div class="flex items-center justify-between">
                         <label class="text-xs text-[#344054]">Update a Document Sources</label>
                         <label class="switch">
@@ -147,7 +147,7 @@
                     </div>
                 </div>
                 <!-- documentation name input section -->
-                <div class="flex flex-col gap-[16px] w-90">
+                <div class="flex flex-col gap-[16px] w-95">
                     <div class="flex flex-col">
                         <label class="text-xs">Documentation Name*</label>
                         <input 
@@ -160,7 +160,7 @@
                 </div>
                 <!-- select product section -->
                 <div class="flex flex-col gap-[16px]" #botProductDropdown *ngIf="!showUpdateDocumentSources">
-                    <div class="relative w-90">
+                    <div class="relative w-95">
                         <p class="text-xs">Select Product*</p>
                         <!-- Products Dropdown Button -->
                         <button
@@ -196,7 +196,7 @@
                 </div>
                 <!-- select template section -->
                 <div class="flex flex-col gap-[16px]" *ngIf="!showUpdateDocumentSources">
-                    <div class="relative w-90" #templatesDropdown>
+                    <div class="relative w-95" #templatesDropdown>
                         <p class="text-xs">Select Template*</p>
                         <!-- Templates Dropdown Button -->
                         <button
@@ -232,7 +232,7 @@
                     </div>
                 </div>
                  <!-- additional content section -->
-                 <div class="flex flex-col gap-[16px] w-90" *ngIf="!showUpdateDocumentSources">
+                 <div class="flex flex-col gap-[16px] w-95" *ngIf="!showUpdateDocumentSources">
                     <div class="flex flex-col gap-[8px]">
                         <label class="text-xs mb-[-8px]">Additional Context</label>
                         <textarea 
@@ -242,54 +242,57 @@
                         ></textarea>
                     </div>
                 </div>
-                <!-- add sources section -->
-                <div class="flex flex-col justify-start gap-2">
-                    <!-- sources list -->
-                    <ul class="flex flex-col gap-[8px] w-90">
-                        <p class="text-xs mb-[-8px]">Add Sources</p>
-                        <li class="flex w-[100%] bg-[#FAFAFA] border border-[#DFDFDF] rounded-lg py-[10px] px-[16px] gap-[8px] justify-between " *ngFor="let item of sources; let i = index">
-                            <div class="flex items-center justify-center gap-[4px]">
-                                <span class="w-[24px] h-[24px] scale-[0.8] bg-[url('./app/resources/icons/green-file-uplode-icon.svg')]"></span>
-                                <span class="text-sm whitespace-nowrap overflow-hidden text-ellipsis w-[25ch] flex-1 text-[#2C2D2E]">{{item.newSource}}</span>
+                <!-- add / upload sources files section -->
+                <div class="flex flex-col w-95">
+                    <p class="text-xs">Add / Upload Sources Files</p>
+                    <div class="w-full bg-white border border-[#D5D7DA] rounded-[8px] p-[16px] w-95">
+                        <div class="flex flex-col justify-start gap-2">
+                            <!-- sources list -->
+                            <ul class="flex flex-col gap-[8px] w-90">
+                                <li class="flex w-[100%] bg-[#FAFAFA] border border-[#DFDFDF] rounded-lg py-[10px] px-[16px] gap-[8px] justify-between " *ngFor="let item of sources; let i = index">
+                                    <div class="flex items-center justify-center gap-[4px]">
+                                        <span class="w-[24px] h-[24px] scale-[0.8] bg-[url('./app/resources/icons/green-file-uplode-icon.svg')]"></span>
+                                        <span class="text-sm whitespace-nowrap overflow-hidden text-ellipsis w-[25ch] flex-1 text-[#2C2D2E]">{{item.newSource}}</span>
+                                    </div>
+                                    <button class="material-icons text-[#919399] ml-[0px]" (click)="deleteSource(i)">delete</button>
+                                </li>
+                            </ul>
+                            <div class="flex w-[100%] bg-[#FAFAFA] border border-[#DFDFDF] rounded-lg py-[10px] px-[16px] gap-[8px]">
+                                <span class="w-[13px] h-[20px] bg-[url('./app/resources/icons/paste-url-icon.svg')]">
+                                </span>
+                                <input type="text" 
+                                    placeholder="Paste your URL here" 
+                                    class="text-sm whitespace-nowrap overflow-hidden text-ellipsis w-[25ch] flex-1 bg-transparent outline-none"  
+                                    [(ngModel)]="newSource" 
+                                    (keydown.enter)="addSource()"
+                                />
                             </div>
-                            <button class="material-icons text-[#919399] ml-[0px]" (click)="deleteSource(i)">delete</button>
-                        </li>
-                    </ul>
-                    <div class="flex w-[100%] bg-[#FAFAFA] border border-[#DFDFDF] rounded-lg py-[10px] px-[16px] gap-[8px]">
-                        <span class="w-[13px] h-[20px] bg-[url('./app/resources/icons/paste-url-icon.svg')]">
-                        </span>
-                        <input type="text" 
-                            placeholder="Paste your URL here" 
-                            class="text-sm whitespace-nowrap overflow-hidden text-ellipsis w-[25ch] flex-1 bg-transparent outline-none"  
-                            [(ngModel)]="newSource" 
-                            (keydown.enter)="addSource()"
-                        />
-                    </div>
-                </div>
-                <!-- Drag and Drop or Browse -->
-                <div class="w-[100%] flex flex-col gap-2">
-                    <!-- pdf sources list -->
-                    <ul class="flex flex-col gap-[8px] w-[100%] mt-6">
-                        <p class="text-sm mb-[-10px]">Upload Sources files</p>
-                        <li class="flex w-[100%] bg-[#FAFAFA] border border-[#DFDFDF] rounded-lg py-[10px] px-[16px] gap-[8px] justify-between " *ngFor="let item of PdfSources; let i = index">
-                            <div class="flex items-center justify-center gap-[4px]">
-                                <img [src]="getFileIcon(item.name)" style="transform: scale(0.8)" alt="File Icon" />
-                                <span class="text-sm whitespace-nowrap overflow-hidden text-ellipsis w-[25ch] flex-1 text-[#2C2D2E]">{{item.name}}</span>
+                        </div>
+                        <!-- Drag and Drop or Browse -->
+                        <div class="w-[100%] flex flex-col gap-2">
+                            <!-- pdf sources list -->
+                            <ul class="flex flex-col gap-[8px] w-[100%] mt-6">
+                                <li class="flex w-[100%] bg-[#FAFAFA] border border-[#DFDFDF] rounded-lg py-[10px] px-[16px] gap-[8px] justify-between " *ngFor="let item of PdfSources; let i = index">
+                                    <div class="flex items-center justify-center gap-[4px]">
+                                        <img [src]="getFileIcon(item.name)" style="transform: scale(0.8)" alt="File Icon" />
+                                        <span class="text-sm whitespace-nowrap overflow-hidden text-ellipsis w-[25ch] flex-1 text-[#2C2D2E]">{{item.name}}</span>
+                                    </div>
+                                    <button class="material-icons text-[#919399] ml-[0px]" (click)="deletePdfSource(i)">delete</button>
+                                </li>
+                            </ul>
+                            <div class="flex flex-col gap-[16px] w-[100%]">
+                                <div class="flex flex-col items-center justify-center w-[100%] bg-[#FAFAFA] border border-[#DFDFDF] rounded-lg py-[16px] px-[24px] gap-[4px]"
+                                    (dragover)="onDragOver($event)" 
+                                    (drop)="onDrop($event)">
+                                    <span class="material-icons rotate-270 text-[#919399] my-[4px]">logout</span>
+                                    <input type="file" #fileInput class="hidden" (change)="onFileSelected($event)" multiple>
+                                    <p class="text-[#474567] text-sm">Drag and drop or 
+                                        <span class="text-primary cursor-pointer" 
+                                            (click)="fileInput.click()">Browse</span>
+                                    </p>
+                                    <p class="text-[#919399] text-xs">PDF, DOC or DOCX (max. 50 MB)</p>
+                                </div>
                             </div>
-                            <button class="material-icons text-[#919399] ml-[0px]" (click)="deletePdfSource(i)">delete</button>
-                        </li>
-                    </ul>
-                    <div class="flex flex-col gap-[16px] w-[100%]">
-                        <div class="flex flex-col items-center justify-center w-[100%] bg-[#FAFAFA] border border-[#DFDFDF] rounded-lg py-[16px] px-[24px] gap-[4px]"
-                            (dragover)="onDragOver($event)" 
-                            (drop)="onDrop($event)">
-                            <span class="material-icons rotate-270 text-[#919399] my-[4px]">logout</span>
-                            <input type="file" #fileInput class="hidden" (change)="onFileSelected($event)" multiple>
-                            <p class="text-[#474567] text-sm">Drag and drop or 
-                                <span class="text-primary cursor-pointer" 
-                                      (click)="fileInput.click()">Browse</span>
-                            </p>
-                            <p class="text-[#919399] text-xs">PDF, DOC or DOCX (max. 50 MB)</p>
                         </div>
                     </div>
                 </div>
