@@ -193,6 +193,9 @@ export class DashboardComponent {
   }
   // Documentation
   goToDocumentationGeneratingPage(){
+    // Set flag to clear fields when navigating to generating page
+    this.documentationService.setShouldClearFieldsOnNavigate(true);
+    
     this.documentationService.setDocumentationLandingPage(false);
     this.documentationService.setDocumentationGeneratingPage(true); 
     this.documentationService.setDocumentationGeneratedPage(false); 

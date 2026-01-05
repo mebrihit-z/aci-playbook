@@ -176,6 +176,10 @@ export class DocumentationComponent implements OnInit, OnDestroy {
     this.subscriptions.push(
       this.documentationService.documentationGeneratingPage$.subscribe(state => {
         this.documentationGeneratingPage = state;
+        // Check if fields should be cleared when navigating to generating page
+        if (state && this.documentationService.checkAndResetClearFieldsFlag()) {
+          this.clearFormFields();
+        }
       })
     );
     
@@ -191,7 +195,12 @@ export class DocumentationComponent implements OnInit, OnDestroy {
     // Get initial state from service
     this.documentationLandingPage = this.documentationService.getDocumentationLandingPage();
     this.documentationGeneratingPage = this.documentationService.getDocumentationGeneratingPage(); 
-    this.documentationGeneratedPage = this.documentationService.getDocumentationGeneratedPage(); 
+    this.documentationGeneratedPage = this.documentationService.getDocumentationGeneratedPage();
+    
+    // Check if fields should be cleared when navigating to generating page (for initial load)
+    if (this.documentationGeneratingPage && this.documentationService.checkAndResetClearFieldsFlag()) {
+      this.clearFormFields();
+    } 
     
     // Subscribe to form data from service
     this.subscriptions.push(
@@ -331,13 +340,36 @@ export class DocumentationComponent implements OnInit, OnDestroy {
     
   }
   // go to documentation generating page
-  goToDocumentationGeneratingPage(){
+  goToDocumentationGeneratingPage(clearFields: boolean = false){
     this.documentationService.setDocumentationLandingPage(false);
     this.documentationService.setDocumentationGeneratedPage(false);
     this.documentationService.setDocumentationGeneratingPage(true);
     this.documentationGeneratedPage = false;
     this.documentationLandingPage = false;
     this.documentationGeneratingPage = true;
+    
+    // If clearFields is true, reset all form fields for new document creation
+    if (clearFields) {
+      this.clearFormFields();
+    }
+  }
+  
+  // Clear all form fields for new document creation
+  clearFormFields() {
+    this.documentationName = '';
+    this.additionalContent = '';
+    this.showUpdateDocumentSources = false;
+    this.updateSources = [];
+    this.updatePdfSources = [];
+    this.hasVisitedGeneratedPage = false;
+    
+    // Clear sources and PDF sources through the service
+    this.documentationService.clearSources();
+    this.documentationService.clearPdfSources();
+    this.documentationService.setSelectedTemplate('Select Template');
+    
+    // Update generate button state
+    this.updateGenerateButtonState();
   }
   // go to documentation landing page
   goToDocumentationLandingPage() {
@@ -1242,7 +1274,8 @@ export class DocumentationComponent implements OnInit, OnDestroy {
     if (!this.generatedContent) {
       return '';
     }
-    return this.convertMarkdownToHTML(this.generatedContent);
+    return this.generatedContent;
+    // return this.convertMarkdownToHTML(this.generatedContent);
   }
 
   // Getter for HTML version of selected documentation content

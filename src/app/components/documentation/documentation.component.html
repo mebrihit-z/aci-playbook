@@ -54,7 +54,7 @@
                     <!-- Create Documentation -->
                     <div class="flex gap-[16px] relative justify-center">
                         <div>
-                            <button class="text-white bg-primary flex items-center gap-[8px] px-[14px] py-[10px] rounded-lg  border border-[#D5D7DA] active-button" (click)="goToDocumentationGeneratingPage()">
+                            <button class="text-white bg-primary flex items-center gap-[8px] px-[14px] py-[10px] rounded-lg  border border-[#D5D7DA] active-button" (click)="goToDocumentationGeneratingPage(true)">
                                 <img src="assets/icons/white-stars.svg" alt="white-stars" class="w-[18.33px] h-[18.33px]">
                                 Create Documentation
                             </button>
@@ -232,7 +232,7 @@
                     </div>
                 </div>
                  <!-- additional content section -->
-                 <div class="flex flex-col gap-[16px] w-95" *ngIf="!showUpdateDocumentSources">
+                 <div class="flex flex-col gap-[16px] w-95">
                     <div class="flex flex-col gap-[8px]">
                         <label class="text-xs mb-[-8px]">Additional Context</label>
                         <textarea 

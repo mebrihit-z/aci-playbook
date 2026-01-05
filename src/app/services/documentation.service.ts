@@ -24,6 +24,9 @@ export class DocumentationService {
  
    // Track current documentation page state
    private currentPageSubject = new BehaviorSubject<'landing' | 'generating' | 'generated'>('landing');
+   
+   // Flag to indicate fields should be cleared when navigating to generating page
+   private shouldClearFieldsOnNavigate = false;
 
   // Expose observables for components to subscribe to
   documentationLandingPage$ = this.documentationLandingPageSubject.asObservable();
@@ -200,6 +203,18 @@ export class DocumentationService {
     this.pdfSourcesSubject.next([]);
     this.selectedTemplateSubject.next('Select Template');
     this.generatedContentSubject.next('');
+  }
+
+  // Set flag to clear fields on next navigation to generating page
+  setShouldClearFieldsOnNavigate(shouldClear: boolean) {
+    this.shouldClearFieldsOnNavigate = shouldClear;
+  }
+
+  // Check and reset the flag (returns true if flag was set, then resets it)
+  checkAndResetClearFieldsFlag(): boolean {
+    const shouldClear = this.shouldClearFieldsOnNavigate;
+    this.shouldClearFieldsOnNavigate = false;
+    return shouldClear;
   }
 
   // Restore documentation state from current page
