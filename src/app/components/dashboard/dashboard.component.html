@@ -327,7 +327,7 @@
 <div class="" *ngIf="isDeleteConfirmModalOpen">
     <div class="overlay"></div>
     <div class="">
-        <div class="flex flex-col bg-white p-[24px] gap-[20px] w-[100%] md:w-[420px] min-h-[220px] rounded-[12px] absolute alert-modal tooltip">
+        <div class="flex flex-col bg-white p-[24px] gap-[20px] w-[100%] md:w-[420px] min-h-[240px] rounded-[12px] absolute alert-modal tooltip">
             <div class="flex flex-col gap-[16px]">
                 <!-- Warning icon and title -->
                 <div class="flex items-center gap-[12px]">
@@ -345,7 +345,7 @@
                 </div>
                 
                 <!-- Confirmation message -->
-                <p class="text-base text-[#344054] leading-relaxed">
+                <p class="text-base text-[#344054] leading-relaxed break-words">
                     Are you sure you want to delete <strong>"{{ deleteConfirmDocumentName }}"</strong>? This action cannot be undone.
                 </p>
             </div>
