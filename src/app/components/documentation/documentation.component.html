@@ -568,6 +568,12 @@
                             </div>
                         </div>
                     </div>
+                    <!-- Update mode notice -->
+                    <div *ngIf="!isGeneratingDocumentation && generatedContent && showUpdateDocumentSources" class="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                        <p class="text-sm text-blue-800 font-medium">
+                            <strong>Note:</strong> The content below will be appended to the end of the base document.
+                        </p>
+                    </div>
                     <!-- Generated content -->
                     <div *ngIf="!isGeneratingDocumentation && generatedContent" class="generated-content" [innerHTML]="generatedContentHTML"></div>
                     <!-- Empty state when no content and not loading -->
